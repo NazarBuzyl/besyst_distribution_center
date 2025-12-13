@@ -1,4 +1,4 @@
-package model.conveyorBelt;
+package org.example.model.conveyorBelt;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,7 @@ public class ConveyorBelt
     {
         this.semaWrite.acquire();
         this.mutex.acquire();
-        this.packagePositions.addFirst(0F);
+        //this.packagePositions.addFirst(0F); todo - need fix
         System.out.println("Employee " + employeeId + " has dropped a package on conveyor belt " + this.conveyorBeltId + ".");
         this.mutex.release();
     }
@@ -36,7 +36,7 @@ public class ConveyorBelt
     {
         this.semaRead.acquire();
         this.mutex.acquire();
-        this.packagePositions.removeLast();
+        //this.packagePositions.removeLast(); todo - need fix
         System.out.println("Employee " + employeeId + " has picked a package from conveyor belt " + this.conveyorBeltId + ".");
         this.mutex.release();
     }

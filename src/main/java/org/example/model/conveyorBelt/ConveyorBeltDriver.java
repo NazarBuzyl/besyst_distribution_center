@@ -1,4 +1,4 @@
-package model.conveyorBelt;
+package org.example.model.conveyorBelt;
 
 
 import java.util.Arrays;
