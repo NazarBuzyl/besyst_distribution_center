@@ -1,4 +1,4 @@
-package model.employee;
+package org.example.model.employee;
 
 
 public class Employee extends Thread

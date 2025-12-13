@@ -1,7 +1,7 @@
-package model.employee;
+package org.example.model.employee;
 
 
-import model.conveyorBelt.ConveyorBelt;
+import org.example.model.conveyorBelt.ConveyorBelt;
 public class Sorter extends Employee
 {
     public static final int SORTING_SPEED = 4000;
