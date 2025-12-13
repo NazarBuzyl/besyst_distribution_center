@@ -1,7 +1,9 @@
 package org.example.model;
 
 import java.time.LocalTime;
-
+/**
+ * @author Nazar Buzyl
+ */
 public class TransportInput extends Thread {
     private static final int DEFAULT_DELIVERY_TIME = 7500; // 7,5s
     private static final int DEFAULT_DELIVERED_PACKAGES = 20; // unloading -> 5s

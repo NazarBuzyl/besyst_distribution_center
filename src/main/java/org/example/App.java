@@ -23,16 +23,43 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) {
-        //startNazarTeil();
-        //startFineTeil();
 
+        // --- Domain-Objekte ---
+        ConveyorBelt belt = new ConveyorBelt(1);
+        ConveyorBeltDriver driver = new ConveyorBeltDriver(belt);
+        Dropper dropper = new Dropper(1, belt);
+        Sorter sorter = new Sorter(2, belt);
+
+        // --- Driver-Thread starten ---
+        driver.setDaemon(true); // beendet sich automatisch beim Schließen der App
+        driver.start();
+        dropper.setDaemon(true);
+        sorter.setDaemon(true);
+        dropper.start();
+        sorter.start();
+
+        //startNazarTeil();
+
+        // --- GUI ---
         var javaVersion = SystemInfo.javaVersion();
         var javafxVersion = SystemInfo.javafxVersion();
 
-        var label = new Label("Hello, JavaFX " + javafxVersion + ", running on Java " + javaVersion + ".");
+        var label = new Label(
+                "Hello, JavaFX " + javafxVersion +
+                        ", running on Java " + javaVersion + ".\n" +
+                        "ConveyorBeltDriver is running.\n" +
+                        "Check the console output."
+        );
+
         var scene = new Scene(new StackPane(label), 640, 480);
         stage.setScene(scene);
+        stage.setTitle("Distribution Center Simulation");
         stage.show();
+    }
+
+    @Override
+    public void stop() {
+        System.out.println("JavaFX Application shutting down.");
     }
 
     private void startNazarTeil() { // erst nach 7,5s gibt was aus
@@ -72,7 +99,7 @@ public class App extends Application {
     }
 
     public static void main(String[] args) {
-        launch();
+        launch(args);
     }
 
 }

@@ -1,6 +1,7 @@
 package org.example.model.employee;
-import org.example.model.conveyorBelt.ConveyorBelt;
 
+
+import org.example.model.conveyorBelt.ConveyorBelt;
 public class Dropper extends Employee
 {
     public static final int DROP_SPEED = 2000; // speed in ms

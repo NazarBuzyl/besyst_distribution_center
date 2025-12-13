@@ -2,7 +2,9 @@ package org.example.model;
 
 import java.time.LocalTime;
 import java.util.concurrent.Semaphore;
-
+/**
+ * @author Nazar Buzyl
+ */
 public class ReceivingStation extends PackageStorage {
     private static final String ACCEPTATION_MESSAGE = " Station has accepted delivery transport %d. %n";
     private static final String CURRENT_STATE_MESSAGE  ="%n Current storage state: %d. %n%n";

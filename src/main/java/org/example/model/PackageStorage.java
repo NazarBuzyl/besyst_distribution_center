@@ -2,6 +2,9 @@ package org.example.model;
 
 import java.util.concurrent.Semaphore;
 
+/**
+ * @author Nazar Buzyl
+ */
 public class PackageStorage {
     protected static final int DEFAULT_MAX_STORAGE = 1000;
 
