@@ -68,13 +68,13 @@ public class ReceivingStation {
      * @throws InterruptedException
      */
     public void packageTake(int takenPackages) throws InterruptedException {
-        semaRead.acquire();
+        semaRead.acquire(takenPackages);
 
         mutex.acquire();
         storage-=takenPackages;
         mutex.release();
 
-        semaWrite.release();
+        semaWrite.release(takenPackages);
     }
 }
 

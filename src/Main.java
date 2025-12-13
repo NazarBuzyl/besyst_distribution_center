@@ -8,7 +8,6 @@ public class Main
 {
     public static void main(String[] args)
     {
-
         ReceivingStation receivingStation = new ReceivingStation();
 
         List<TransportInput> transporters = new LinkedList<>();
