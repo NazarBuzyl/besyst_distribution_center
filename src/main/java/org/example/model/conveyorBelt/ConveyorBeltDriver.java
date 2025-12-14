@@ -11,7 +11,7 @@ import java.util.List;
 public class ConveyorBeltDriver extends Thread {
 
     public static final float SPEED = 10; // % per second
-    public static final int FPS = 12;
+    public static final int FPS = 30;
     public static final int REFRESHING_RATE = 1000 / FPS;
 
     public static final float MIN_DISTANCE =
@@ -31,14 +31,13 @@ public class ConveyorBeltDriver extends Thread {
 
     @Override
     public void run() {
-        while (true) {
-            try {
+        try {
+            while (!isInterrupted()) {
                 updateConveyorBelt();
                 Thread.sleep(REFRESHING_RATE);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return;
             }
+        } catch (InterruptedException e) {
+            interrupt();
         }
     }
 

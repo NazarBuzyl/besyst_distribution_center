@@ -2,13 +2,14 @@ package org.example;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import org.example.model.conveyorBelt.ConveyorBelt;
 import org.example.model.conveyorBelt.ConveyorBeltDriver;
 import org.example.model.employee.Dropper;
 import org.example.model.employee.Sorter;
+import org.example.view.conveyorBelt.ConveyorBeltView;
+
 
 /**
  * JavaFX App
@@ -18,32 +19,25 @@ public class App extends Application {
     @Override
     public void start(Stage stage) {
 
-        // --- Domain-Objekte ---
+        // --- Domain ---
         ConveyorBelt belt = new ConveyorBelt(1);
         ConveyorBeltDriver driver = new ConveyorBeltDriver(belt);
         Dropper dropper = new Dropper(1, belt);
         Sorter sorter = new Sorter(2, belt);
 
-        // --- Driver-Thread starten ---
-        driver.setDaemon(true); // beendet sich automatisch beim Schließen der App
-        driver.start();
+        // --- Threads ---
+        driver.setDaemon(true);
         dropper.setDaemon(true);
         sorter.setDaemon(true);
+
+        driver.start();
         dropper.start();
         sorter.start();
 
         // --- GUI ---
-        var javaVersion = SystemInfo.javaVersion();
-        var javafxVersion = SystemInfo.javafxVersion();
+        ConveyorBeltView beltView = new ConveyorBeltView(belt);
 
-        var label = new Label(
-                "Hello, JavaFX " + javafxVersion +
-                        ", running on Java " + javaVersion + ".\n" +
-                        "ConveyorBeltDriver is running.\n" +
-                        "Check the console output."
-        );
-
-        var scene = new Scene(new StackPane(label), 640, 480);
+        Scene scene = new Scene(new StackPane(beltView), 640, 200);
         stage.setScene(scene);
         stage.setTitle("Distribution Center Simulation");
         stage.show();
