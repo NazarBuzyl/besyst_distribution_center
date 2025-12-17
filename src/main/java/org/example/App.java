@@ -5,6 +5,7 @@ import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import org.example.model.conveyorBelt.ConveyorBelt;
+import org.example.model.conveyorBelt.ConveyorBeltArray;
 import org.example.model.conveyorBelt.ConveyorBeltDriver;
 import org.example.model.employee.Dropper;
 import org.example.model.employee.Sorter;
@@ -20,24 +21,15 @@ public class App extends Application {
     public void start(Stage stage) {
 
         // --- Domain ---
-        ConveyorBelt belt = new ConveyorBelt(1);
-        ConveyorBeltDriver driver = new ConveyorBeltDriver(belt);
-        Dropper dropper = new Dropper(1, belt);
-        Sorter sorter = new Sorter(2, belt);
-
-        // --- Threads ---
-        driver.setDaemon(true);
+        ConveyorBeltArray conveyorBeltArray = new ConveyorBeltArray(5);
+        Dropper dropper = new Dropper(1, conveyorBeltArray);
         dropper.setDaemon(true);
-        sorter.setDaemon(true);
-
-        driver.start();
         dropper.start();
-        sorter.start();
 
         // --- GUI ---
-        ConveyorBeltView beltView = new ConveyorBeltView(belt);
+        ConveyorBeltView beltView = new ConveyorBeltView(conveyorBeltArray);
 
-        Scene scene = new Scene(new StackPane(beltView), 640, 200);
+        Scene scene = new Scene(new StackPane(beltView), 1920, 1080);
         stage.setScene(scene);
         stage.setTitle("Distribution Center Simulation");
         stage.show();

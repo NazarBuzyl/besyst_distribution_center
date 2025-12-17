@@ -24,9 +24,8 @@ public class ConveyorBelt {
     }
 
     public void dropPackage(int employeeId) throws InterruptedException {
-        this.semaWrite.acquire();
         this.mutex.acquire();
-
+        this.semaWrite.acquire();
         try {
             packagePositions.addFirst(0F);
             System.out.println(
@@ -39,9 +38,8 @@ public class ConveyorBelt {
     }
 
     public void pickPackage(int employeeId) throws InterruptedException {
-        this.semaRead.acquire();
         this.mutex.acquire();
-
+        this.getSemaRead().acquire();
         try {
             packagePositions.removeLast();
             System.out.println(

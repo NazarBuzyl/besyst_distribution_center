@@ -1,50 +1,50 @@
 package org.example.model.conveyorBelt;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 
-/**
- * @author Finn Kramer
- */
 public class ConveyorBeltDriver extends Thread {
 
-    public static final float SPEED = 10; // % per second
-    public static final int FPS = 30;
+    public static final float SPEED = 10;
+    public static final int FPS = 12;
     public static final int REFRESHING_RATE = 1000 / FPS;
 
-    public static final float MIN_DISTANCE =
-            100F / (ConveyorBelt.CAPACITY - 1);
+    public static final float MIN_DISTANCE = 100F / (ConveyorBelt.CAPACITY - 1);
 
-    public static final float POSITION_CHANGE_RATE =
-            (1F / FPS) * SPEED;
+    public static final float POSITION_CHANGE_RATE = (1F / FPS) * SPEED;
 
     private boolean entranceLocked = false;
     private boolean exitLocked = true;
 
     private final ConveyorBelt target;
+    private final BlockingQueue<ConveyorBelt> writableQueue;
+    private final BlockingQueue<ConveyorBelt> readableQueue;
 
-    public ConveyorBeltDriver(ConveyorBelt target) {
+    public ConveyorBeltDriver(ConveyorBelt target,
+                              BlockingQueue<ConveyorBelt> writableQueue,
+                              BlockingQueue<ConveyorBelt> readableQueue) {
         this.target = target;
+        this.writableQueue = writableQueue;
+        this.readableQueue = readableQueue;
     }
 
     @Override
     public void run() {
-        try {
-            while (!isInterrupted()) {
+        while (!isInterrupted()) {
+            try {
                 updateConveyorBelt();
                 Thread.sleep(REFRESHING_RATE);
+            } catch (InterruptedException e) {
+                interrupt();
             }
-        } catch (InterruptedException e) {
-            interrupt();
         }
     }
 
     private void updateConveyorBelt() throws InterruptedException {
 
         target.getMutex().acquire();
-
         try {
             Deque<Float> deque = target.getPackagePositions();
             List<Float> positions = new ArrayList<>(deque);
@@ -54,9 +54,7 @@ public class ConveyorBeltDriver extends Thread {
 
                 if (i < positions.size() - 1) {
                     float next = positions.get(i + 1);
-                    if (next - pos < MIN_DISTANCE) {
-                        continue;
-                    }
+                    if (next - pos < MIN_DISTANCE) continue;
                 }
 
                 if (pos < 100F) {
@@ -70,15 +68,13 @@ public class ConveyorBeltDriver extends Thread {
 
             updateLocks(positions);
 
-            System.out.println(Arrays.toString(positions.toArray()));
-
         } finally {
             target.getMutex().release();
         }
     }
 
-    private void updateLocks(List<Float> positions) {
-
+    private void updateLocks(List<Float> positions)
+    {
         if (positions.isEmpty() || positions.get(0) >= MIN_DISTANCE) {
             unlockEntrance();
         } else {
@@ -93,9 +89,11 @@ public class ConveyorBeltDriver extends Thread {
         }
     }
 
-    private void unlockEntrance() {
+    private void unlockEntrance()
+    {
         if (entranceLocked) {
             target.getSemaWrite().release();
+            this.writableQueue.offer(this.target);
         }
         entranceLocked = false;
     }
@@ -103,6 +101,7 @@ public class ConveyorBeltDriver extends Thread {
     private void unlockExit() {
         if (exitLocked) {
             target.getSemaRead().release();
+            this.readableQueue.offer(this.target);
         }
         exitLocked = false;
     }

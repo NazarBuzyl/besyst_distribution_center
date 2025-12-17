@@ -1,14 +1,14 @@
 package org.example.model.employee;
 
+import org.example.model.conveyorBelt.ConveyorBeltArray;
 
-import org.example.model.conveyorBelt.ConveyorBelt;
 public class Dropper extends Employee
 {
     public static final int DROP_SPEED = 2000; // speed in ms
 
-    private final ConveyorBelt target;
+    private final ConveyorBeltArray target;
 
-    public Dropper(int employeeId, ConveyorBelt target)
+    public Dropper(int employeeId, ConveyorBeltArray target)
     {
         super(employeeId);
         this.target = target;
