@@ -36,15 +36,16 @@ public class ConveyorBeltArray {
         }
     }
 
-    public void dropPackage(int employeeId) throws InterruptedException {
+    public void dropPackage(int employeeId, Package p) throws InterruptedException {
         ConveyorBelt belt = writableBelts.take();
-        belt.dropPackage(employeeId);
+        belt.dropPackage(employeeId, p);
     }
 
-    public void pickPackage(int employeeId) throws InterruptedException {
+    public Package pickPackage(int employeeId) throws InterruptedException {
         ConveyorBelt belt = readableBelts.take();
-        belt.pickPackage(employeeId);
+        return belt.pickPackage(employeeId);
     }
+
 
     public List<ConveyorBelt> getBelts() {
         return Collections.unmodifiableList(belts);

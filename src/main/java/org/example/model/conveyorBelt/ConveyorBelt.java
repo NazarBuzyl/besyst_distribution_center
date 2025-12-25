@@ -1,19 +1,16 @@
 package org.example.model.conveyorBelt;
 
-import java.util.Deque;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Semaphore;
 
-/**
- * @author Finn Kramer
- */
 public class ConveyorBelt {
 
     private final int conveyorBeltId;
 
     public static final int CAPACITY = 5;
 
-    private final Deque<Float> packagePositions = new LinkedList<>();
+    private final List<Package> packageList = new ArrayList<>(CAPACITY);
 
     private final Semaphore mutex = new Semaphore(1);
     private final Semaphore semaWrite = new Semaphore(1);
@@ -23,36 +20,38 @@ public class ConveyorBelt {
         this.conveyorBeltId = conveyorBeltId;
     }
 
-    public void dropPackage(int employeeId) throws InterruptedException {
-        this.mutex.acquire();
+    public void dropPackage(int employeeId, Package p) throws InterruptedException {
         this.semaWrite.acquire();
-        try {
-            packagePositions.addFirst(0F);
-            System.out.println(
-                    "Employee " + employeeId +
-                            " has dropped a package on conveyor belt " + conveyorBeltId + "."
-            );
-        } finally {
-            this.mutex.release();
-        }
-    }
-
-    public void pickPackage(int employeeId) throws InterruptedException {
         this.mutex.acquire();
-        this.getSemaRead().acquire();
         try {
-            packagePositions.removeLast();
-            System.out.println(
-                    "Employee " + employeeId +
-                            " has picked a package from conveyor belt " + conveyorBeltId + "."
-            );
+            p.setPosition(0.0F);
+            this.packageList.add(0, p);
+
+            System.out.println("Employee " + employeeId
+                    + " has dropped a package (PLZ=" + p.getZipCode() + ") on conveyor belt "
+                    + conveyorBeltId + ".");
         } finally {
             this.mutex.release();
         }
     }
 
-    public Deque<Float> getPackagePositions() {
-        return packagePositions;
+    public Package pickPackage(int employeeId) throws InterruptedException {
+        this.semaRead.acquire();
+        this.mutex.acquire();
+        try {
+            Package p = this.packageList.remove(this.packageList.size() - 1);
+
+            System.out.println("Employee " + employeeId
+                    + " has picked a package (PLZ=" + p.getZipCode() + ") from conveyor belt "
+                    + conveyorBeltId + ".");
+            return p;
+        } finally {
+            this.mutex.release();
+        }
+    }
+
+    public List<Package> getPackageList() {
+        return this.packageList;
     }
 
     public Semaphore getMutex() {
@@ -65,5 +64,9 @@ public class ConveyorBelt {
 
     public Semaphore getSemaWrite() {
         return semaWrite;
+    }
+
+    public int getConveyorBeltId() {
+        return conveyorBeltId;
     }
 }

@@ -7,7 +7,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import org.example.model.conveyorBelt.ConveyorBelt;
 import org.example.model.conveyorBelt.ConveyorBeltArray;
-
+import org.example.model.conveyorBelt.Package;
 import java.util.*;
 
 public class ConveyorBeltView extends VBox {
@@ -88,10 +88,11 @@ public class ConveyorBeltView extends VBox {
         try {
             belt.getMutex().acquire();
 
-            Deque<Float> positions = belt.getPackagePositions();
+            List<Package> packages = belt.getPackageList();
+
 
             // Anzahl Pakete anpassen
-            while (nodes.size() < positions.size()) {
+            while (nodes.size() < packages.size()) {
                 Rectangle pkg = new Rectangle(PACKAGE_SIZE, PACKAGE_SIZE);
                 pkg.setFill(Color.CORNFLOWERBLUE);
                 pkg.setArcWidth(6);
@@ -100,13 +101,14 @@ public class ConveyorBeltView extends VBox {
                 pane.getChildren().add(pkg);
             }
 
-            while (nodes.size() > positions.size()) {
+            while (nodes.size() > packages.size()) {
                 Rectangle r = nodes.remove(nodes.size() - 1);
                 pane.getChildren().remove(r);
             }
 
             int i = 0;
-            for (Float pos : positions) {
+            for (Package p : packages) {
+                float pos = p.getPosition();
                 Rectangle pkg = nodes.get(i++);
                 double x = 20 + (pos / 100.0) * (BELT_WIDTH - PACKAGE_SIZE);
                 double y = 20 + (BELT_HEIGHT - PACKAGE_SIZE) / 2;

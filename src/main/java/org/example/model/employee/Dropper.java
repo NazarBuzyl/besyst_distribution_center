@@ -1,6 +1,7 @@
 package org.example.model.employee;
 
 import org.example.model.conveyorBelt.ConveyorBeltArray;
+import org.example.model.conveyorBelt.Package;
 
 public class Dropper extends Employee
 {
@@ -15,19 +16,25 @@ public class Dropper extends Employee
     }
 
     @Override
-    public void run()
-    {
-        try
-        {
-            while (true)
-            {
-                this.target.dropPackage(this.getEmployeeId());
+    public void run() {
+        try {
+            while (true) {
+                int zipCode = generateZipCode();   // новий пакет
+                Package p = new Package(zipCode);
+
+                this.target.dropPackage(this.getEmployeeId(), p);
+
                 Thread.sleep(DROP_SPEED);
             }
-        } catch (InterruptedException e)
-        {
+        } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
+
+    private int generateZipCode() {
+        // Bremen-ish ZIP range (28000–28999)
+        return 28000 + (int)(Math.random() * 1000);
+    }
+
 
 }
