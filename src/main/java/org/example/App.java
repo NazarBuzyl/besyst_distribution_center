@@ -2,17 +2,19 @@ package org.example;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.example.model.ReceivingStation;
 import org.example.model.TransportInput;
+import org.example.model.TransportObserver;
 import org.example.model.conveyorBelt.ConveyorBelt;
 import org.example.model.conveyorBelt.ConveyorBeltDriver;
 import org.example.model.employee.Dropper;
 import org.example.model.employee.Sorter;
+import org.example.view.TruckView;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -23,35 +25,9 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) {
+        Pane root = new Pane(renderTruck());
 
-        // --- Domain-Objekte ---
-        ConveyorBelt belt = new ConveyorBelt(1);
-        ConveyorBeltDriver driver = new ConveyorBeltDriver(belt);
-        Dropper dropper = new Dropper(1, belt);
-        Sorter sorter = new Sorter(2, belt);
-
-        // --- Driver-Thread starten ---
-        driver.setDaemon(true); // beendet sich automatisch beim Schließen der App
-        driver.start();
-        dropper.setDaemon(true);
-        sorter.setDaemon(true);
-        dropper.start();
-        sorter.start();
-
-        //startNazarTeil();
-
-        // --- GUI ---
-        var javaVersion = SystemInfo.javaVersion();
-        var javafxVersion = SystemInfo.javafxVersion();
-
-        var label = new Label(
-                "Hello, JavaFX " + javafxVersion +
-                        ", running on Java " + javaVersion + ".\n" +
-                        "ConveyorBeltDriver is running.\n" +
-                        "Check the console output."
-        );
-
-        var scene = new Scene(new StackPane(label), 640, 480);
+        var scene = new Scene(root, 640, 480);
         stage.setScene(scene);
         stage.setTitle("Distribution Center Simulation");
         stage.show();
@@ -62,16 +38,34 @@ public class App extends Application {
         System.out.println("JavaFX Application shutting down.");
     }
 
-    private void startNazarTeil() { // erst nach 7,5s gibt was aus
-        ReceivingStation receivingStation = new ReceivingStation();
+    // todo - create normal controller for rendering
+    private VBox renderTruck() {
+        VBox vbox = new VBox(20);
 
-        List<TransportInput> transporters = new LinkedList<>();
-        for(int i=1; i<=4; i++) {
-            TransportInput newTransport = new TransportInput(i, receivingStation);
-            transporters.add(newTransport);
-//            transporters.getLast().start(); todo linked list funktioniert nicht
-            newTransport.start();
+        ReceivingStation receivingStation = new ReceivingStation();
+        List<TransportObserver> transportObservers = new ArrayList<>();
+        for(int i = 1; i <= 4; i++) {
+            transportObservers.add(new  TransportObserver());
         }
+
+        TransportInput transport1 = new TransportInput(transportObservers.get(0), 1, receivingStation, 30000, 100);
+        TransportInput transport2 = new TransportInput(transportObservers.get(1), 2, receivingStation, 5000, 10);
+        TransportInput transport3 = new TransportInput(transportObservers.get(2), 3, receivingStation, 20000, 30);
+        TransportInput transport4 = new TransportInput(transportObservers.get(3), 4, receivingStation, 5000, 20);
+
+
+        TruckView truck1 = new TruckView(transport1, transportObservers.get(0));
+        TruckView truck2 = new TruckView(transport2, transportObservers.get(1));
+        TruckView truck3 = new TruckView(transport3, transportObservers.get(2));
+        TruckView truck4 = new TruckView(transport4, transportObservers.get(3));
+        vbox.getChildren().addAll(truck1, truck2, truck3,  truck4);
+
+        transport1.start();
+        transport2.start();
+        transport3.start();
+        transport4.start();
+
+        return vbox;
     }
 
     private void startFineTeil() {

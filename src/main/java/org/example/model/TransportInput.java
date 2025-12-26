@@ -1,6 +1,7 @@
 package org.example.model;
 
 import java.time.LocalTime;
+
 /**
  * @author Nazar Buzyl
  */
@@ -13,7 +14,6 @@ public class TransportInput extends Thread {
     private static final String UPLOADING_START_MESSAGE = " Transfer %d has started unloading %d packages.%n";
     private static final String UPLOADING_FINISH_MESSAGE = " Transfer %d has finished unloading %d packages.%n";
 
-
     private final int transportId;
     private final ReceivingStation target;
 
@@ -21,7 +21,11 @@ public class TransportInput extends Thread {
     private final int delivered_packages; // todo - List<Package>
     private final int unloading_time;
 
-    public TransportInput(int id, ReceivingStation target, int delivery_time, int delivered_packages) {
+    // Variable, die Änderungen beim Entladen überwacht und das View-Element darüber benachrichtigt.
+    private final TransportObserver transportObserver ;
+
+    public TransportInput(  TransportObserver observer, int id, ReceivingStation target, int delivery_time, int delivered_packages) {
+        this.transportObserver = observer;
         this.transportId = id;
         this.target = target;
         this.delivery_time = delivery_time;
@@ -29,7 +33,8 @@ public class TransportInput extends Thread {
         this.unloading_time = delivered_packages*DEFAULT_UNLOADING_FAKTOR;
     }
 
-    public TransportInput(int id, ReceivingStation target) {
+    public TransportInput( TransportObserver observer, int id, ReceivingStation target) {
+        this.transportObserver = observer;
         this.transportId = id;
         this.target = target;
         this.delivery_time = DEFAULT_DELIVERY_TIME;
@@ -67,14 +72,24 @@ public class TransportInput extends Thread {
      * @throws InterruptedException
      */
     public int unloading() throws InterruptedException {
+            this.transportObserver.startUnloading();
             System.out.printf(LocalTime.now().withNano(0) + UPLOADING_START_MESSAGE, this.transportId, this.delivered_packages);
             Thread.sleep(this.unloading_time);
             System.out.printf(LocalTime.now().withNano(0) + UPLOADING_FINISH_MESSAGE, this.transportId, this.delivered_packages);
+            this.transportObserver.finishUnloading();
             return this.delivered_packages;
     }
 
     public int getDeliveredPackages() {
         return this.delivered_packages;
+    }
+
+    public int getDeliveryTime() {
+        return this.delivery_time;
+    }
+
+    public int getUnloadingTime() {
+        return this.unloading_time;
     }
 
     public int getTransportId() {
