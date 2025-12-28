@@ -13,13 +13,17 @@ public class ReceivingStation extends PackageStorage {
 
     private final Semaphore input; // Semaphor zur Kontrolle der geparkten Fahrzeuge vor der Annahmestation
 
-    public ReceivingStation() {
+    private final ReceivingStationObserver receivingStationObserver;
+
+    public ReceivingStation(ReceivingStationObserver observer) {
         super();
+        this.receivingStationObserver = observer;
         this.input = new Semaphore(DEFAULT_MAX_PARKING_PLACES);
     }
 
-    public ReceivingStation(int maxStorage) {
+    public ReceivingStation(ReceivingStationObserver observer, int maxStorage) {
         super(maxStorage);
+        this.receivingStationObserver = observer;
         this.input = new Semaphore(DEFAULT_MAX_PARKING_PLACES);
     }
 
@@ -48,14 +52,17 @@ public class ReceivingStation extends PackageStorage {
     private void packageAcceptance(TransportInput transport) throws InterruptedException {
         semaWrite.acquire(transport.getDeliveredPackages());// Überprüft, ob genug Platz für die Entladung der Ware vorhanden ist
 
+        receivingStationObserver.startReceiving(); // Observer
         System.out.printf(LocalTime.now().withNano(0)+ACCEPTATION_MESSAGE, transport.getTransportId());
         int packages = transport.unloading(); // Aufruf des Entladeprozesses der Ware (jedes Fahrzeug hat unterschiedliche Entladezeiten)
 
         mutex.acquire();
         this.storage += packages;
         System.out.printf(LocalTime.now().withNano(0) + CURRENT_STATE_MESSAGE, this.storage);
+        receivingStationObserver.changePackages(this.storage);
         mutex.release();
         System.out.println("Wartende Werkzeuge" + input.getQueueLength()); // todo - test
+        receivingStationObserver.finishReceiving(); // Observer
 
         semaRead.release(packages);
     }

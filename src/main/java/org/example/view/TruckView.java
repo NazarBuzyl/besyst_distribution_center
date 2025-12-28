@@ -13,16 +13,16 @@ import org.example.model.TransportObserver;
 
 public class TruckView extends Group {
     private final static String INFO_TEMPLATE = "- Information -\n %d Packages\n Delivery time: each %ds";
-    private final static double doorWidth = 5;
-    private final static double cargoWidth = 140;
-    private final static double cabinSize = 40;
-    private final static double height = 70;
-    private final static double wheelRadius = 10;
-    private final static double parkingDuration = 1000;//ms
-    private final static double doorAnimationDuration = 600;//ms
+    private final static double DOOR_WIDTH = 5;
+    private final static double CARGO_WIDTH = 140;
+    private final static double CABIN_SIZE = 40;
+    private final static double HEIGHT = 70;
+    private final static double WHEEL_RADIUS = 10;
+    private final static double PARKING_DURATION = 1000;//ms
+    private final static double DOOR_ANIMATION_DURATION = 600;//ms
 
-    private final double totalWidth = doorWidth + cargoWidth + cabinSize;
-    private final double totalHeight = height + 2 * wheelRadius;
+    private final double totalWidth = DOOR_WIDTH + CARGO_WIDTH + CABIN_SIZE;
+    private final double totalHeight = HEIGHT + 2 * WHEEL_RADIUS;
 
     private Rectangle cargo;
     private Rectangle cabin;
@@ -66,52 +66,53 @@ public class TruckView extends Group {
     }
 
     private void renderCargoDoor() {
-        this.cargoDoor = new Rectangle(doorWidth, height);
+        this.cargoDoor = new Rectangle(DOOR_WIDTH, HEIGHT);
         cargoDoor.setFill(Color.GRAY);
         cargoDoor.setStroke(Color.BLACK);
         cargoDoor.setX(0);
         cargoDoor.setY(0);
-        doorRotate = new Rotate(0, doorWidth, height, 0, Rotate.Z_AXIS);
+        doorRotate = new Rotate(0, DOOR_WIDTH, HEIGHT, 0, Rotate.Z_AXIS);
 
         cargoDoor.getTransforms().add(doorRotate);
+        //getChildren().add(cargoDoor); todo - change like this
     }
 
     private void renderCargo() {
-        this.cargo = new Rectangle(cargoWidth, height);
+        this.cargo = new Rectangle(CARGO_WIDTH, HEIGHT);
         cargo.setFill(Color.LIGHTGRAY);
         cargo.setStroke(Color.BLACK);
-        cargo.setX(doorWidth);
+        cargo.setX(DOOR_WIDTH);
         cargo.setY(0);
     }
 
     private void renderInfoText() {
         double distance = 10;
         infoText = new Text(String.format(INFO_TEMPLATE, transportSystem.getDeliveredPackages(), transportSystem.getDeliveryTime() / 1000));
-        infoText.setX(distance + doorWidth);
+        infoText.setX(distance + DOOR_WIDTH);
         infoText.setY(distance * 2);
     }
 
     private void renderCabin() {
-        this.cabin = new Rectangle(cabinSize, cabinSize);
+        this.cabin = new Rectangle(CABIN_SIZE, CABIN_SIZE);
         cabin.setFill(Color.DARKGRAY);
         cabin.setStroke(Color.BLACK);
-        cabin.setX(doorWidth + cargoWidth);
-        cabin.setY(height - cabinSize);
+        cabin.setX(DOOR_WIDTH + CARGO_WIDTH);
+        cabin.setY(HEIGHT - CABIN_SIZE);
     }
 
     private void renderWheel() {
         double distance = 20;
-        this.rearWheel = new Circle(wheelRadius);
+        this.rearWheel = new Circle(WHEEL_RADIUS);
         rearWheel.setFill(Color.BLACK);
-        double groundY = height + wheelRadius;
+        double groundY = HEIGHT + WHEEL_RADIUS;
 
-        rearWheel.setCenterX(doorWidth + distance);
+        rearWheel.setCenterX(DOOR_WIDTH + distance);
         rearWheel.setCenterY(groundY);
 
-        this.frontWheel = new Circle(wheelRadius);
+        this.frontWheel = new Circle(WHEEL_RADIUS);
         frontWheel.setFill(Color.BLACK);
 
-        frontWheel.setCenterX(doorWidth + cargoWidth + cabinSize - distance);
+        frontWheel.setCenterX(DOOR_WIDTH + CARGO_WIDTH + CABIN_SIZE - distance);
         frontWheel.setCenterY(groundY);
     }
 
@@ -124,7 +125,7 @@ public class TruckView extends Group {
         SequentialTransition sequence = new SequentialTransition(
                 rotateTruck(180),
                 openDoor(),
-                new PauseTransition(Duration.millis(transportSystem.getUnloadingTime() - parkingDuration - doorAnimationDuration * 2)),
+                new PauseTransition(Duration.millis(transportSystem.getUnloadingTime() - PARKING_DURATION - DOOR_ANIMATION_DURATION * 2)),
                 closeDoor(),
                 rotateTruck(0)
         );
@@ -135,7 +136,7 @@ public class TruckView extends Group {
 
     private Animation rotateTruck(double angle) {
         return new Timeline(
-                new KeyFrame(Duration.millis(parkingDuration),
+                new KeyFrame(Duration.millis(PARKING_DURATION),
                         new KeyValue(truckRotateY.angleProperty(), angle)
                 )
         );
@@ -143,7 +144,7 @@ public class TruckView extends Group {
 
     private Animation openDoor() {
         return new Timeline(
-                new KeyFrame(Duration.millis(doorAnimationDuration),
+                new KeyFrame(Duration.millis(DOOR_ANIMATION_DURATION),
                         new KeyValue(doorRotate.angleProperty(), -90)
                 )
         );
@@ -151,7 +152,7 @@ public class TruckView extends Group {
 
     private Animation closeDoor() {
         return new Timeline(
-                new KeyFrame(Duration.millis(doorAnimationDuration),
+                new KeyFrame(Duration.millis(DOOR_ANIMATION_DURATION),
                         new KeyValue(doorRotate.angleProperty(), 0)
                 )
         );

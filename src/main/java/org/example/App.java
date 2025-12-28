@@ -2,16 +2,20 @@ package org.example;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.example.model.ReceivingStation;
+import org.example.model.ReceivingStationObserver;
 import org.example.model.TransportInput;
 import org.example.model.TransportObserver;
 import org.example.model.conveyorBelt.ConveyorBelt;
 import org.example.model.conveyorBelt.ConveyorBeltDriver;
 import org.example.model.employee.Dropper;
 import org.example.model.employee.Sorter;
+import org.example.view.ReceivingStationView;
 import org.example.view.TruckView;
 
 import java.util.ArrayList;
@@ -25,9 +29,18 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) {
-        Pane root = new Pane(renderTruck());
+        ReceivingStationObserver receivingStationObserver = new ReceivingStationObserver();
+        ReceivingStation receivingStation = new ReceivingStation(receivingStationObserver);
 
-        var scene = new Scene(root, 640, 480);
+        ReceivingStationView receivingStationView =  new ReceivingStationView(receivingStation, receivingStationObserver);
+        BorderPane truck = new BorderPane(renderTruck(receivingStation) );
+        truck.setMinWidth(300);
+
+        HBox root = new HBox(truck, receivingStationView);
+        root.setLayoutX(30);
+
+
+        var scene = new Scene(root, 1000, 480);
         stage.setScene(scene);
         stage.setTitle("Distribution Center Simulation");
         stage.show();
@@ -39,10 +52,9 @@ public class App extends Application {
     }
 
     // todo - create normal controller for rendering
-    private VBox renderTruck() {
+    private VBox renderTruck(ReceivingStation receivingStation) {
         VBox vbox = new VBox(20);
 
-        ReceivingStation receivingStation = new ReceivingStation();
         List<TransportObserver> transportObservers = new ArrayList<>();
         for(int i = 1; i <= 4; i++) {
             transportObservers.add(new  TransportObserver());
@@ -50,20 +62,20 @@ public class App extends Application {
 
         TransportInput transport1 = new TransportInput(transportObservers.get(0), 1, receivingStation, 30000, 100);
         TransportInput transport2 = new TransportInput(transportObservers.get(1), 2, receivingStation, 5000, 10);
-        TransportInput transport3 = new TransportInput(transportObservers.get(2), 3, receivingStation, 20000, 30);
-        TransportInput transport4 = new TransportInput(transportObservers.get(3), 4, receivingStation, 5000, 20);
+//        TransportInput transport3 = new TransportInput(transportObservers.get(2), 3, receivingStation, 20000, 30);
+//        TransportInput transport4 = new TransportInput(transportObservers.get(3), 4, receivingStation, 5000, 20);
 
 
         TruckView truck1 = new TruckView(transport1, transportObservers.get(0));
         TruckView truck2 = new TruckView(transport2, transportObservers.get(1));
-        TruckView truck3 = new TruckView(transport3, transportObservers.get(2));
-        TruckView truck4 = new TruckView(transport4, transportObservers.get(3));
-        vbox.getChildren().addAll(truck1, truck2, truck3,  truck4);
+//        TruckView truck3 = new TruckView(transport3, transportObservers.get(2));
+//        TruckView truck4 = new TruckView(transport4, transportObservers.get(3));
+        vbox.getChildren().addAll(truck1, truck2);
 
         transport1.start();
         transport2.start();
-        transport3.start();
-        transport4.start();
+//        transport3.start();
+//        transport4.start();
 
         return vbox;
     }
