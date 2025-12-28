@@ -1,5 +1,6 @@
 package org.example.view;
 
+import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Circle;
@@ -53,8 +54,10 @@ public class ReceivingStationView extends BorderPane {
         });
 
         receivingStationObserver.packagesProperty().addListener((obs, oldVal, newVal) -> {
-            updatePackages(newVal.floatValue()/storageCapacity);
-            //setInformation(3, newVal.intValue()); todo - information changing in Thread
+            Platform.runLater(() -> {
+                updatePackages(newVal.doubleValue() / storageCapacity);
+                setInformation(3, newVal.intValue());
+            });
         });
     }
 
