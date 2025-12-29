@@ -8,20 +8,22 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class ConveyorBeltArray {
 
+    private final String id;
     private final LinkedList<ConveyorBelt> belts = new LinkedList<>();
     private final LinkedList<ConveyorBeltDriver> drivers = new LinkedList<>();
 
     private final BlockingQueue<ConveyorBelt> writableBelts = new LinkedBlockingQueue<>();
     private final BlockingQueue<ConveyorBelt> readableBelts = new LinkedBlockingQueue<>();
 
-    public ConveyorBeltArray(int arraySize) {
+    public ConveyorBeltArray(String id, int arraySize) {
+        this.id = id;
         initBelts(arraySize);
         initDrivers();
     }
 
     private void initBelts(int arraySize) {
         for (int i = 0; i < arraySize; i++) {
-            ConveyorBelt belt = new ConveyorBelt(i + 1);
+            ConveyorBelt belt = new ConveyorBelt(this.id + "." + (i + 1));
             belts.add(belt);
             writableBelts.add(belt);
         }

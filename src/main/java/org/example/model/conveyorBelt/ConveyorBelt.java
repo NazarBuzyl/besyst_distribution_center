@@ -9,7 +9,7 @@ import java.util.concurrent.Semaphore;
  */
 public class ConveyorBelt {
 
-    private final int conveyorBeltId;
+    private final String id;
 
     public static final int CAPACITY = 5;
 
@@ -19,8 +19,8 @@ public class ConveyorBelt {
     private final Semaphore semaWrite = new Semaphore(1);
     private final Semaphore semaRead = new Semaphore(0);
 
-    public ConveyorBelt(int conveyorBeltId) {
-        this.conveyorBeltId = conveyorBeltId;
+    public ConveyorBelt(String id) {
+        this.id = id;
     }
 
     public void dropPackage(int employeeId) throws InterruptedException {
@@ -30,7 +30,7 @@ public class ConveyorBelt {
             packagePositions.addFirst(0F);
             System.out.println(
                     "Employee " + employeeId +
-                            " has dropped a package on conveyor belt " + conveyorBeltId + "."
+                            " has dropped a package on conveyor belt " + this.id + "."
             );
         } finally {
             this.mutex.release();
@@ -44,7 +44,7 @@ public class ConveyorBelt {
             packagePositions.removeLast();
             System.out.println(
                     "Employee " + employeeId +
-                            " has picked a package from conveyor belt " + conveyorBeltId + "."
+                            " has picked a package from conveyor belt " + this.id + "."
             );
         } finally {
             this.mutex.release();
