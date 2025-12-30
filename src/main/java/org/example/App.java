@@ -2,22 +2,14 @@ package org.example;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import org.example.model.ReceivingStation;
-import org.example.model.ReceivingStationObserver;
-import org.example.model.TransportInput;
-import org.example.model.TransportObserver;
-import org.example.model.conveyorBelt.ConveyorBelt;
-import org.example.model.conveyorBelt.ConveyorBeltDriver;
-import org.example.model.employee.Dropper;
-import org.example.model.employee.Sorter;
+import org.example.model.stations.receiving.ReceivingStation;
+import org.example.model.stations.receiving.ReceivingStationObserver;
+import org.example.model.transport.TransportInput;
+import org.example.model.transport.TransportObserver;
 import org.example.view.ReceivingStationView;
-import org.example.view.TransportSection;
-import org.example.view.TruckView;
+import org.example.view.SectionTransport;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,9 +25,9 @@ public class App extends Application {
         ReceivingStationObserver receivingStationObserver = new ReceivingStationObserver();
         ReceivingStation receivingStation = new ReceivingStation(receivingStationObserver);
 
-        TransportSection transportSection = initTransportSection(receivingStation);
+        SectionTransport sectionTransport = initTransportSection(receivingStation);
         ReceivingStationView receivingStationView =  new ReceivingStationView(receivingStation, receivingStationObserver);
-        HBox root = new HBox(transportSection, receivingStationView);
+        HBox root = new HBox(sectionTransport, receivingStationView);
         root.setLayoutX(30);
 
         var scene = new Scene(root, 1000, 480);
@@ -49,7 +41,7 @@ public class App extends Application {
         System.out.println("JavaFX Application shutting down.");
     }
 
-    private TransportSection initTransportSection(ReceivingStation receivingStation) {
+    private SectionTransport initTransportSection(ReceivingStation receivingStation) {
         List<TransportObserver> transportObservers = new ArrayList<>();
         for(int i = 1; i <= 4; i++) {
             transportObservers.add(new  TransportObserver());
@@ -65,7 +57,7 @@ public class App extends Application {
             transportInput.start();
         }
 
-        return new TransportSection(transportInputs, transportObservers);
+        return new SectionTransport(transportInputs, transportObservers);
     }
 
 

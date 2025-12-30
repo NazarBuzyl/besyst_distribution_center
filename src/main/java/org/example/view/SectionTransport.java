@@ -3,19 +3,22 @@ package org.example.view;
 import javafx.geometry.Pos;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
-import org.example.model.TransportInput;
-import org.example.model.TransportObserver;
+import org.example.model.transport.TransportInput;
+import org.example.model.transport.TransportObserver;
 
 import java.util.*;
 
-public class TransportSection extends BorderPane {
+/**
+ * @author Nazar Buzyl
+ */
+public class SectionTransport extends BorderPane {
     private final List<TransportInput> trucks;
     private final List<TransportObserver> truckObservers;
     private final List<TruckView> truckViews = new LinkedList<>();;
 
     private final VBox trucksVBox;
 
-    public TransportSection(List<TransportInput> trucks, List<TransportObserver> truckObservers) {
+    public SectionTransport(List<TransportInput> trucks, List<TransportObserver> truckObservers) {
         this.trucksVBox = new VBox(20);
         this.trucks = trucks;
         this.truckObservers = truckObservers;

@@ -1,7 +1,10 @@
-package org.example.model;
+package org.example.model.transport;
 
 import javafx.beans.property.*;
 
+/**
+ * @author Nazar Buzyl
+ */
 public class TransportObserver {
     private final BooleanProperty unloading = new SimpleBooleanProperty(false);
 

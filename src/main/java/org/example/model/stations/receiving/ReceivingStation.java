@@ -1,4 +1,7 @@
-package org.example.model;
+package org.example.model.stations.receiving;
+
+import org.example.model.stations.PackageStorage;
+import org.example.model.transport.TransportInput;
 
 import java.time.LocalTime;
 import java.util.concurrent.Semaphore;

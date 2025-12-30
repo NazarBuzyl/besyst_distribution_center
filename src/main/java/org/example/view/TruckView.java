@@ -1,6 +1,7 @@
 package org.example.view;
 
 import javafx.animation.*;
+import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -8,9 +9,12 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.scene.transform.Rotate;
 import javafx.util.Duration;
-import org.example.model.TransportInput;
-import org.example.model.TransportObserver;
+import org.example.model.transport.TransportInput;
+import org.example.model.transport.TransportObserver;
 
+/**
+ * @author Nazar Buzyl
+ */
 public class TruckView extends Group {
     private final static String INFO_TEMPLATE = "- Information -\n %d Packages\n Delivery time: each %ds";
     private final static double DOOR_WIDTH = 5;
@@ -47,7 +51,8 @@ public class TruckView extends Group {
 
         transportObserver.unloadingProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal) {
-                unload();
+                // UI-Operationen dürfen nur im JavaFX Application Thread ausgeführt werden.
+                Platform.runLater(this::unload); // nicht thread-sicher
             }
         });
     }
