@@ -12,12 +12,14 @@ import org.example.model.ReceivingStationObserver;
 import org.example.model.TransportInput;
 import org.example.model.TransportObserver;
 import org.example.model.conveyorBelt.ConveyorBelt;
+import org.example.model.conveyorBelt.ConveyorBeltArray;
 import org.example.model.conveyorBelt.ConveyorBeltDriver;
 import org.example.model.employee.Dropper;
 import org.example.model.employee.Sorter;
 import org.example.view.ReceivingStationView;
 import org.example.view.TransportSection;
 import org.example.view.TruckView;
+import org.example.view.conveyorBelt.ConveyorBeltView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +37,12 @@ public class App extends Application {
 
         TransportSection transportSection = initTransportSection(receivingStation);
         ReceivingStationView receivingStationView =  new ReceivingStationView(receivingStation, receivingStationObserver);
-        HBox root = new HBox(transportSection, receivingStationView);
+        ConveyorBeltArray conveyorBelts = new ConveyorBeltArray("1", 10);
+        ConveyorBeltView conveyorBeltView = new ConveyorBeltView(conveyorBelts);
+        Dropper dropper = new Dropper(1, conveyorBelts);
+        dropper.setDaemon(true);
+        dropper.start();
+        HBox root = new HBox(transportSection, receivingStationView, conveyorBeltView);
         root.setLayoutX(30);
 
         var scene = new Scene(root, 1000, 480);
