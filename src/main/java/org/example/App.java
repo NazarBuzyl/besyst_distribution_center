@@ -37,14 +37,23 @@ public class App extends Application {
 
         TransportSection transportSection = initTransportSection(receivingStation);
         ReceivingStationView receivingStationView =  new ReceivingStationView(receivingStation, receivingStationObserver);
-        ConveyorBeltArray conveyorBelts = new ConveyorBeltArray("1", 10);
+
+        // Initialize primary conveyor belts.
+        ConveyorBeltArray conveyorBelts = new ConveyorBeltArray("1", 3);
         ConveyorBeltView conveyorBeltView = new ConveyorBeltView(conveyorBelts);
         Dropper dropper = new Dropper(1, conveyorBelts);
         dropper.setDaemon(true);
         dropper.start();
-        HBox root = new HBox(transportSection, receivingStationView, conveyorBeltView);
+
+        // Set up all view elements.
+        HBox root = new HBox(
+                transportSection,
+                receivingStationView,
+                conveyorBeltView
+        );
         root.setLayoutX(30);
 
+        // Set up scene.
         var scene = new Scene(root, 1000, 480);
         stage.setScene(scene);
         stage.setTitle("Distribution Center Simulation");

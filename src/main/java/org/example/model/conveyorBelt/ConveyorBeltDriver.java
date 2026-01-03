@@ -5,23 +5,51 @@ import java.util.Deque;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
-public class ConveyorBeltDriver extends Thread {
-
+/**
+ * Klasse für einen Fließbandtreiber
+ *
+ * @author Finn Kramer
+ */
+public class ConveyorBeltDriver extends Thread
+{
+    // Geschwindigkeit
     public static final float SPEED = 10;
+
+    // Animations-Framerate
     public static final int FPS = 12;
+
+    // Unterbrechnungszeit pro Frame
     public static final int REFRESHING_RATE = 1000 / FPS;
 
+    // Paketabstand
     public static final float MIN_DISTANCE = 100F / (ConveyorBelt.CAPACITY - 1);
 
+    // Paketgeschwindigkeit
     public static final float POSITION_CHANGE_RATE = (1F / FPS) * SPEED;
 
+    // Eingang gesperrt
     private boolean entranceLocked = false;
+
+    // Ausgang gesperrt
     private boolean exitLocked = true;
 
+    // Fließband
     private final ConveyorBelt target;
+
+    // beschreibbare Fließbänder
     private final BlockingQueue<ConveyorBelt> writableQueue;
+
+    // lesbare Fließbänder
     private final BlockingQueue<ConveyorBelt> readableQueue;
 
+
+    /**
+     * Erzeugt eine Instanz aus einem Fließband und zwei Warteschlangen.
+     *
+     * @param target anzutreibendes Fließband
+     * @param writableQueue Warteschlange mit beschreibbaren Fließbändern
+     * @param readableQueue Warteschlange mit lesbaren Fließbändern
+     */
     public ConveyorBeltDriver(ConveyorBelt target,
                               BlockingQueue<ConveyorBelt> writableQueue,
                               BlockingQueue<ConveyorBelt> readableQueue) {
@@ -30,6 +58,12 @@ public class ConveyorBeltDriver extends Thread {
         this.readableQueue = readableQueue;
     }
 
+
+    /**
+     * run-Methode des Threads
+     *
+     * Aktualisiere das Fließband fortlaufend.
+     */
     @Override
     public void run() {
         while (!isInterrupted()) {
@@ -42,6 +76,12 @@ public class ConveyorBeltDriver extends Thread {
         }
     }
 
+
+    /**
+     * Aktualisiere das Fließband.
+     *
+     * Diese Methode kann den aufrufenden Thread unterbrechen.
+     */
     private void updateConveyorBelt() throws InterruptedException {
 
         target.getMutex().acquire();
@@ -73,6 +113,11 @@ public class ConveyorBeltDriver extends Thread {
         }
     }
 
+    /**
+     * Aktualisiere die Sperrvariablen.
+     *
+     * @param positions Paketpositionen
+     */
     private void updateLocks(List<Float> positions)
     {
         if (positions.isEmpty() || positions.get(0) >= MIN_DISTANCE) {
@@ -89,6 +134,10 @@ public class ConveyorBeltDriver extends Thread {
         }
     }
 
+
+    /**
+     * Entsperre den Eingang.
+     */
     private void unlockEntrance()
     {
         if (entranceLocked) {
@@ -98,6 +147,9 @@ public class ConveyorBeltDriver extends Thread {
         entranceLocked = false;
     }
 
+    /**
+     * Entsperre den Ausgang.
+     */
     private void unlockExit() {
         if (exitLocked) {
             target.getSemaRead().release();

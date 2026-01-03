@@ -10,13 +10,27 @@ import org.example.model.conveyorBelt.ConveyorBeltArray;
 
 import java.util.*;
 
-public class ConveyorBeltView extends VBox {
 
+/**
+ * @author Finn Kramer
+ *
+ * Diese Klasse beschreibt das GUI-Modul für eine Fließbandreihe.
+ */
+public class ConveyorBeltView extends VBox
+{
+    // Fließbandbreite in Pixeln
     private static final double BELT_WIDTH = 500;
+
+    // Fließbandhöhe in Pixeln
     private static final double BELT_HEIGHT = 60;
+
+    // Paketgröße in Pixeln
     private static final double PACKAGE_SIZE = 20;
+
+    // Paketabstand in Pixeln
     private static final double SPACING = 20;
 
+    // Fließbandreihe
     private final ConveyorBeltArray conveyorBeltArray;
 
     // Zu jedem Band: seine Paket-Rechtecke
@@ -25,6 +39,12 @@ public class ConveyorBeltView extends VBox {
     // Zu jedem Band: sein Pane
     private final Map<ConveyorBelt, Pane> beltPanes = new HashMap<>();
 
+
+    /**
+     * Initialisiere eine Instanz aus einer Fließbandreihe.
+     *
+     * @param conveyorBeltArray Fließbandreihe
+     */
     public ConveyorBeltView(ConveyorBeltArray conveyorBeltArray) {
         this.conveyorBeltArray = conveyorBeltArray;
 
@@ -35,8 +55,10 @@ public class ConveyorBeltView extends VBox {
         startAnimation();
     }
 
-    /* ---------- Initialisierung ---------- */
 
+    /**
+     * Initialisiere alle Fließbänder.
+     */
     private void initBelts() {
         for (ConveyorBelt belt : conveyorBeltArray.getBelts()) {
             Pane beltPane = createBeltPane();
@@ -46,6 +68,12 @@ public class ConveyorBeltView extends VBox {
         }
     }
 
+
+    /**
+     * Erstelle ein Pane für ein Fließband.
+     *
+     * @return Pane eines Fließbands
+     */
     private Pane createBeltPane() {
         Pane pane = new Pane();
         pane.setPrefSize(BELT_WIDTH + 40, BELT_HEIGHT + 40);
@@ -61,8 +89,10 @@ public class ConveyorBeltView extends VBox {
         return pane;
     }
 
-    /* ---------- Animation ---------- */
 
+    /**
+     * Starte die Animation der Fließbänder.
+     */
     private void startAnimation() {
         AnimationTimer timer = new AnimationTimer() {
             @Override
@@ -73,15 +103,25 @@ public class ConveyorBeltView extends VBox {
         timer.start();
     }
 
-    private void renderAllBelts() {
+
+    /**
+     * Rendere alle Fließbänder.
+     */
+    private void renderAllBelts()
+    {
         for (ConveyorBelt belt : beltPanes.keySet()) {
             renderBelt(belt);
         }
     }
 
-    /* ---------- Rendering eines einzelnen Bands ---------- */
 
-    private void renderBelt(ConveyorBelt belt) {
+    /**
+     * Rendere ein einzelnes Fließband.
+     *
+     * @param belt Fließband
+     */
+    private void renderBelt(ConveyorBelt belt)
+    {
         Pane pane = beltPanes.get(belt);
         List<Rectangle> nodes = packageNodes.get(belt);
 
@@ -90,7 +130,6 @@ public class ConveyorBeltView extends VBox {
 
             Deque<Float> positions = belt.getPackagePositions();
 
-            // Anzahl Pakete anpassen
             while (nodes.size() < positions.size()) {
                 Rectangle pkg = new Rectangle(PACKAGE_SIZE, PACKAGE_SIZE);
                 pkg.setFill(Color.CORNFLOWERBLUE);
