@@ -13,7 +13,9 @@ public class ConveyorBelt {
     private final List<Package> packageList = new ArrayList<>(CAPACITY);
 
     private final Semaphore mutex = new Semaphore(1);
-    private final Semaphore semaWrite = new Semaphore(1);
+    // semaWrite repräsentiert die Anzahl freier Plätze (anfangs CAPACITY)
+    private final Semaphore semaWrite = new Semaphore(CAPACITY);
+    // semaRead repräsentiert die Anzahl gefüllter Plätze (anfangs 0)
     private final Semaphore semaRead = new Semaphore(0);
 
     public ConveyorBelt(int conveyorBeltId) {
@@ -33,6 +35,7 @@ public class ConveyorBelt {
         } finally {
             this.mutex.release();
         }
+        this.semaRead.release();
     }
 
     public Package pickPackage(int employeeId) throws InterruptedException {
@@ -47,6 +50,7 @@ public class ConveyorBelt {
             return p;
         } finally {
             this.mutex.release();
+            this.semaWrite.release();
         }
     }
 

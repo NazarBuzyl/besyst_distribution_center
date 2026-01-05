@@ -4,6 +4,7 @@ import javafx.animation.AnimationTimer;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import org.example.model.conveyorBelt.ConveyorBelt;
 import org.example.model.conveyorBelt.ConveyorBeltArray;
@@ -24,6 +25,9 @@ public class ConveyorBeltView extends VBox {
 
     // Zu jedem Band: sein Pane
     private final Map<ConveyorBelt, Pane> beltPanes = new HashMap<>();
+
+    // Nodes für gerade sortierte Pakete (gemeinsam, über alle Bänder)
+    private final List<Circle> sortingNodes = new ArrayList<>();
 
     public ConveyorBeltView(ConveyorBeltArray conveyorBeltArray) {
         this.conveyorBeltArray = conveyorBeltArray;
@@ -48,14 +52,14 @@ public class ConveyorBeltView extends VBox {
 
     private Pane createBeltPane() {
         Pane pane = new Pane();
-        pane.setPrefSize(BELT_WIDTH + 40, BELT_HEIGHT + 40);
+        pane.setPrefSize(BELT_WIDTH + 40, BELT_HEIGHT + 60);
 
         Rectangle beltRect = new Rectangle(BELT_WIDTH, BELT_HEIGHT);
         beltRect.setFill(Color.DARKGRAY);
         beltRect.setArcHeight(20);
         beltRect.setArcWidth(20);
         beltRect.setLayoutX(20);
-        beltRect.setLayoutY(20);
+        beltRect.setLayoutY(40);
 
         pane.getChildren().add(beltRect);
         return pane;
@@ -68,6 +72,7 @@ public class ConveyorBeltView extends VBox {
             @Override
             public void handle(long now) {
                 renderAllBelts();
+                renderSortingNodes();
             }
         };
         timer.start();
@@ -111,7 +116,7 @@ public class ConveyorBeltView extends VBox {
                 float pos = p.getPosition();
                 Rectangle pkg = nodes.get(i++);
                 double x = 20 + (pos / 100.0) * (BELT_WIDTH - PACKAGE_SIZE);
-                double y = 20 + (BELT_HEIGHT - PACKAGE_SIZE) / 2;
+                double y = 40 + (BELT_HEIGHT - PACKAGE_SIZE) / 2;
 
                 pkg.setLayoutX(x);
                 pkg.setLayoutY(y);
@@ -121,6 +126,34 @@ public class ConveyorBeltView extends VBox {
             Thread.currentThread().interrupt();
         } finally {
             belt.getMutex().release();
+        }
+    }
+
+    // Rendern der Knoten für aktuell sortierte Pakete
+    private void renderSortingNodes() {
+        // entferne alte Knoten
+        for (Circle c : new ArrayList<>(sortingNodes)) {
+            Pane parent = (Pane) c.getParent();
+            if (parent != null) parent.getChildren().remove(c);
+        }
+        sortingNodes.clear();
+
+        List<Package> beingSorted = conveyorBeltArray.getBeingSorted();
+        int i = 0;
+        for (Package p : beingSorted) {
+            // Platzieren: über dem obersten Band (oder rotiere über Bänder)
+            int bandIndex = i % conveyorBeltArray.getBelts().size();
+            Pane pane = beltPanes.get(conveyorBeltArray.getBelts().get(bandIndex));
+
+            Circle dot = new Circle(8, Color.CRIMSON);
+            double x = 20 + ((i * 10) % (BELT_WIDTH - PACKAGE_SIZE));
+            double y = 10;
+            dot.setLayoutX(x);
+            dot.setLayoutY(y);
+
+            pane.getChildren().add(dot);
+            sortingNodes.add(dot);
+            i++;
         }
     }
 }

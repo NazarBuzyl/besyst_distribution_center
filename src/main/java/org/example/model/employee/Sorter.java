@@ -1,80 +1,66 @@
-
 package org.example.model.employee;
 
-
-import org.example.model.warehouse.Zone;
-import org.example.model.conveyorBelt.ConveyorBelt;
+import org.example.model.conveyorBelt.ConveyorBeltArray;
 import org.example.model.conveyorBelt.Package;
+import org.example.model.sorting.SortingRoom;
 
-import java.util.Map;
+public class Sorter extends Employee {
 
-public class Sorter extends Employee
-{
-    public static final long SORTING_SPEED = 500;
+    public static final int SORTING_SPEED = 1000;
 
-    private final ConveyorBelt pickTarget;
+    private final ConveyorBeltArray beltArray;
+    private final SortingRoom sortingRoom;
 
-    private final Map<Zone, ConveyorBelt> dropTargets;
+    private volatile boolean running = true;
 
-    public Sorter(int employeeId, ConveyorBelt pickTarget, Map<Zone, ConveyorBelt> dropTargets) {
+    public Sorter(int employeeId, ConveyorBeltArray beltArray, SortingRoom sortingRoom) {
         super(employeeId);
-        this.pickTarget = pickTarget;
-        this.dropTargets = dropTargets;
-    }
-    private Zone determineZone(int zipCode) {
-        int idx = Math.abs(zipCode) % 5;
-
-        switch (idx) {
-            case 0:
-                return Zone.NORTH;
-            case 1:
-                return Zone.SOUTH;
-            case 2:
-                return Zone.EAST;
-            case 3:
-                return Zone.WEST;
-            default:
-                return Zone.OUTSKIRTS;
-        }
+        this.beltArray = beltArray;
+        this.sortingRoom = sortingRoom;
     }
 
+    public void requestStop() {
+        running = false;
+        this.interrupt();
+    }
 
     @Override
     public void run() {
         try {
-            while (true) {
-                Package p = pickTarget.pickPackage(getEmployeeId());
+            while (running && !Thread.currentThread().isInterrupted()) {
 
-                long sortTime = determineSortTime(p.getZipCode());
-                Thread.sleep(sortTime);
+                Package p = sortingRoom.takeForSorting();
 
-                Zone zone = determineZone(p.getZipCode());
-                ConveyorBelt targetBelt = dropTargets.get(zone);
+                sortingRoom.addBeingSorted(p);
 
-                if (targetBelt != null) {
-                    targetBelt.dropPackage(getEmployeeId(), p);
-                } else {
-                    System.out.println("No target belt for zone " + zone);
+                try {
+                    System.out.println("Sorter " + getEmployeeId()
+                            + " is sorting package PLZ=" + p.getZipCode());
+
+                    Thread.sleep(SORTING_SPEED);
+
+                    int targetBandIndex = determineTargetBeltIndex(p.getZipCode());
+
+                    beltArray.dropPackageTo(targetBandIndex, getEmployeeId(), p);
+
+                } finally {
+                    sortingRoom.removeBeingSorted(p);
                 }
 
+                Thread.sleep(200);
             }
         } catch (InterruptedException e) {
-            System.err.println("Sorter Thread unterbrochen.");
             Thread.currentThread().interrupt();
         }
     }
 
-    private long determineSortTime ( int zipCode){
-        // Beispiel-Logik: Höhere PLZ-Zahlen (ferne Ziele) benötigen mehr Zeit für die Analyse.
-        if (zipCode >= 90000) return 1000; // Komplexe/Ferne Ziele: 6 Sekunden
-        if (zipCode >= 50000) return 500; // Mittlere Distanz: 3 Sekunden
-        return SORTING_SPEED; // Standard: 1.5 Sekunden
-    }
-    private ConveyorBelt findTargetBelt ( int zipCode){
-        // Beispiel: Nutzt die ersten zwei Ziffern der PLZ (z.B. 42xxx -> Key 4)
-        int key = zipCode / 10000;
+    private int determineTargetBeltIndex(int zip) {
 
-        // Versuche, das Zielband direkt über den Key abzurufen
-        return dropTargets.get(key);
+        if (zip < 28195 || zip > 28779) return 5; // 5 = "INVALID/OUTSIDE" (zur Seite legen)
+
+        if (zip >= 28717) return 1; // eher Bremen-Nord (viele 287xx)
+        if (zip >= 28307) return 2; // eher Osten/SE (viele 283xx)
+        if (zip >= 28237) return 3; // eher Westen (vieles 2823x/28239)
+        return 4;                   // Rest = Mitte/Süd (z.B. 281xx–2822x)
     }
 }

@@ -1,15 +1,16 @@
 package org.example.model.employee;
 
-import org.example.model.conveyorBelt.ConveyorBeltArray;
 import org.example.model.conveyorBelt.Package;
+import org.example.model.sorting.SortingRoom;
+import org.example.model.warehouse.Zone;
 
 public class Dropper extends Employee
 {
     public static final int DROP_SPEED = 2000; // speed in ms
 
-    private final ConveyorBeltArray target;
+    private final SortingRoom target;
 
-    public Dropper(int employeeId, ConveyorBeltArray target)
+    public Dropper(int employeeId, SortingRoom target)
     {
         super(employeeId);
         this.target = target;
@@ -19,10 +20,10 @@ public class Dropper extends Employee
     public void run() {
         try {
             while (true) {
-                int zipCode = generateZipCode();   // новий пакет
+                int zipCode = Zone.randomPlz();
                 Package p = new Package(zipCode);
 
-                this.target.dropPackage(this.getEmployeeId(), p);
+                this.target.submitUnsorted(p);
 
                 Thread.sleep(DROP_SPEED);
             }
@@ -30,11 +31,4 @@ public class Dropper extends Employee
             throw new RuntimeException(e);
         }
     }
-
-    private int generateZipCode() {
-        // Bremen-ish ZIP range (28000–28999)
-        return 28000 + (int)(Math.random() * 1000);
-    }
-
-
 }
