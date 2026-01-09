@@ -42,6 +42,16 @@ public class ConveyorBeltDriver extends Thread {
         }
     }
 
+<<<<<<< Updated upstream
+=======
+
+
+    /**
+     * Aktualisiere das Fließband.
+     *
+     * Diese Methode kann den aufrufenden Thread unterbrechen.
+     */
+>>>>>>> Stashed changes
     private void updateConveyorBelt() throws InterruptedException {
 
         target.getMutex().acquire();

@@ -7,7 +7,13 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+<<<<<<< Updated upstream
 public class ConveyorBeltArray {
+=======
+import org.example.model.Package;
+
+
+>>>>>>> Stashed changes
 
     private final LinkedList<ConveyorBelt> belts = new LinkedList<>();
     private final LinkedList<ConveyorBeltDriver> drivers = new LinkedList<>();
@@ -18,7 +24,19 @@ public class ConveyorBeltArray {
     // Liste der Pakete, die momentan vom Sorter bearbeitet werden (zur Visualisierung)
     private final List<Package> beingSorted = Collections.synchronizedList(new ArrayList<>());
 
+<<<<<<< Updated upstream
     public ConveyorBeltArray(int arraySize) {
+=======
+
+    /**
+     * Erzeuge eine Instanz aus einer Fließbandreihen-Id und einer FLießbandanzahl.
+     *
+     * @param id Fließbandreihen-Id
+     * @param arraySize Fließbandanzahl
+     */
+    public ConveyorBeltArray(String id, int arraySize) {
+        this.id = id;
+>>>>>>> Stashed changes
         initBelts(arraySize);
         initDrivers();
     }
@@ -40,9 +58,36 @@ public class ConveyorBeltArray {
         }
     }
 
+<<<<<<< Updated upstream
     public void dropPackage(int employeeId, Package p) throws InterruptedException {
         ConveyorBelt belt = writableBelts.take();
         belt.dropPackage(employeeId, p);
+=======
+    /**
+     * Legt ein Paket gezielt auf das Band mit 1-basierter Indexierung (beltIndex).
+     */
+    public void dropPackageTo(int beltIndex, int employeeId, Package p) throws InterruptedException {
+        if (beltIndex < 1 || beltIndex > belts.size()) {
+            throw new IllegalArgumentException("Invalid belt index: " + beltIndex);
+        }
+        ConveyorBelt belt = belts.get(beltIndex - 1);
+        belt.dropPackage(employeeId, p);
+    }
+
+
+
+    /**
+     * Lege ein Paket ab.
+     *
+     * Diese Methode kann den aufrufenden Thread unterbrechen.
+     *
+     * @param employeeId Mitarbeiter-Id
+     * @throws InterruptedException Unterbrochen-Ausnahme
+     */
+    public void dropPackage(int employeeId, Package p) throws InterruptedException {
+        ConveyorBelt belt = writableBelts.take();
+        belt.dropPackage(employeeId , p);
+>>>>>>> Stashed changes
     }
 
     /**
@@ -81,6 +126,26 @@ public class ConveyorBeltArray {
     public Package pickPackage(int employeeId) throws InterruptedException {
         ConveyorBelt belt = readableBelts.take();
         return belt.pickPackage(employeeId);
+    }
+
+    public Package pickPackageFrom(int beltIndex, int employeeId) throws InterruptedException {
+        if (beltIndex < 1 || beltIndex > belts.size()) {
+            throw new IllegalArgumentException("Invalid belt index: " + beltIndex);
+        }
+        ConveyorBelt belt = belts.get(beltIndex - 1);
+
+        return belt.pickPackageAndReturn(employeeId);
+    }
+
+    /**
+     * nimmt ein Band, dessen Ende frei ist
+     * @param employeeId
+     * @return
+     * @throws InterruptedException
+     */
+    public Package pickAnyPackage(int employeeId) throws InterruptedException {
+        ConveyorBelt belt = readableBelts.take();
+        return belt.pickPackageAndReturn(employeeId);
     }
 
 
