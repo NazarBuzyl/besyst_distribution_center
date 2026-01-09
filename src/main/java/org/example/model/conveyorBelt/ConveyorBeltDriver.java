@@ -1,51 +1,90 @@
 package org.example.model.conveyorBelt;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 
 /**
+ * Klasse für einen Fließbandtreiber
+ *
  * @author Finn Kramer
  */
-public class ConveyorBeltDriver extends Thread {
+public class ConveyorBeltDriver extends Thread
+{
+    // Geschwindigkeit
+    public static final float SPEED = 10;
 
-    public static final float SPEED = 10; // % per second
+    // Animations-Framerate
     public static final int FPS = 12;
+
+    // Unterbrechnungszeit pro Frame
     public static final int REFRESHING_RATE = 1000 / FPS;
 
-    public static final float MIN_DISTANCE =
-            100F / (ConveyorBelt.CAPACITY - 1);
+    // Paketabstand
+    public static final float MIN_DISTANCE = 100F / (ConveyorBelt.CAPACITY - 1);
 
-    public static final float POSITION_CHANGE_RATE =
-            (1F / FPS) * SPEED;
+    // Paketgeschwindigkeit
+    public static final float POSITION_CHANGE_RATE = (1F / FPS) * SPEED;
 
+    // Eingang gesperrt
     private boolean entranceLocked = false;
+
+    // Ausgang gesperrt
     private boolean exitLocked = true;
 
+    // Fließband
     private final ConveyorBelt target;
 
-    public ConveyorBeltDriver(ConveyorBelt target) {
+    // beschreibbare Fließbänder
+    private final BlockingQueue<ConveyorBelt> writableQueue;
+
+    // lesbare Fließbänder
+    private final BlockingQueue<ConveyorBelt> readableQueue;
+
+
+    /**
+     * Erzeugt eine Instanz aus einem Fließband und zwei Warteschlangen.
+     *
+     * @param target anzutreibendes Fließband
+     * @param writableQueue Warteschlange mit beschreibbaren Fließbändern
+     * @param readableQueue Warteschlange mit lesbaren Fließbändern
+     */
+    public ConveyorBeltDriver(ConveyorBelt target,
+                              BlockingQueue<ConveyorBelt> writableQueue,
+                              BlockingQueue<ConveyorBelt> readableQueue) {
         this.target = target;
+        this.writableQueue = writableQueue;
+        this.readableQueue = readableQueue;
     }
 
+
+    /**
+     * run-Methode des Threads
+     *
+     * Aktualisiere das Fließband fortlaufend.
+     */
     @Override
     public void run() {
-        while (true) {
+        while (!isInterrupted()) {
             try {
                 updateConveyorBelt();
                 Thread.sleep(REFRESHING_RATE);
             } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return;
+                interrupt();
             }
         }
     }
 
+
+    /**
+     * Aktualisiere das Fließband.
+     *
+     * Diese Methode kann den aufrufenden Thread unterbrechen.
+     */
     private void updateConveyorBelt() throws InterruptedException {
 
         target.getMutex().acquire();
-
         try {
             Deque<Float> deque = target.getPackagePositions();
             List<Float> positions = new ArrayList<>(deque);
@@ -55,9 +94,7 @@ public class ConveyorBeltDriver extends Thread {
 
                 if (i < positions.size() - 1) {
                     float next = positions.get(i + 1);
-                    if (next - pos < MIN_DISTANCE) {
-                        continue;
-                    }
+                    if (next - pos < MIN_DISTANCE) continue;
                 }
 
                 if (pos < 100F) {
@@ -71,15 +108,18 @@ public class ConveyorBeltDriver extends Thread {
 
             updateLocks(positions);
 
-            System.out.println(Arrays.toString(positions.toArray()));
-
         } finally {
             target.getMutex().release();
         }
     }
 
-    private void updateLocks(List<Float> positions) {
-
+    /**
+     * Aktualisiere die Sperrvariablen.
+     *
+     * @param positions Paketpositionen
+     */
+    private void updateLocks(List<Float> positions)
+    {
         if (positions.isEmpty() || positions.get(0) >= MIN_DISTANCE) {
             unlockEntrance();
         } else {
@@ -94,16 +134,26 @@ public class ConveyorBeltDriver extends Thread {
         }
     }
 
-    private void unlockEntrance() {
+
+    /**
+     * Entsperre den Eingang.
+     */
+    private void unlockEntrance()
+    {
         if (entranceLocked) {
             target.getSemaWrite().release();
+            this.writableQueue.offer(this.target);
         }
         entranceLocked = false;
     }
 
+    /**
+     * Entsperre den Ausgang.
+     */
     private void unlockExit() {
         if (exitLocked) {
             target.getSemaRead().release();
+            this.readableQueue.offer(this.target);
         }
         exitLocked = false;
     }
