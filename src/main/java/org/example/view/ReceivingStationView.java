@@ -2,26 +2,22 @@ package org.example.view;
 
 import javafx.application.Platform;
 import javafx.geometry.Pos;
-import javafx.scene.control.Label;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.control.Label;
+import javafx.scene.paint.Color;
 
-import org.example.model.SortingRoom;
-import org.example.model.SortingStationObserver;
+import org.example.model.ReceivingStation;
+import org.example.model.ReceivingStationObserver;
 
 import java.util.LinkedList;
 import java.util.List;
 
-public class SortingStationView extends BorderPane {
 
-    private static final String STATION_NAME = "Sorting zone";
-
-    // Wenn du "beingSorted" + "lastZip" nicht anzeigen willst, sag Bescheid.
-    private static final String INFO_TEMPLATE =
-            "- Information - \n Waiting: %d/%d \n Being sorted: %d \n Last ZIP: %s";
-
+public class ReceivingStationView extends BorderPane {
+    private static final String STATION_NAME = "Receiving and dispatching zone";
+    private static final String INFO_TEMPLATE = "- Information - \n Employees: %d \n Packages: %d/%d";
     private static final int STATION_SIZE = 300;
 
     private static final int DOOR_HEIGHT = 100;
@@ -30,58 +26,43 @@ public class SortingStationView extends BorderPane {
 
     private static final int PACKAGE_HEIGHT = 25;
     private static final int PACKAGE_WIDTH = 35;
-    private static final int PACKAGE_PER_SEC = 3; // 3x3 = 9 slots wie bei dir
+    private static final int PACKAGE_PER_SEC = 3;
+
 
     private final Label stationInfo = new Label();
     private final Circle accessLight = new Circle(LIGHT_SIZE);
-
     private final List<Rectangle> packageViews = new LinkedList<>();
     private final GridPane packagesGrid = new GridPane();
 
-    private final SortingRoom sortingRoom;
-    private final SortingStationObserver observer;
-    private final int capacity;
+    private final ReceivingStation receivingStation;
+    private final  ReceivingStationObserver receivingStationObserver;
+    private final int storageCapacity;
 
-    public SortingStationView(SortingRoom sortingRoom, SortingStationObserver observer) {
-        this.sortingRoom = sortingRoom;
-        this.observer = observer;
-        this.capacity = sortingRoom.getCapacity(); // bitte in SortingRoom anbieten
+    public ReceivingStationView(ReceivingStation receivingStation, ReceivingStationObserver receivingStationObserver) {
+        this.receivingStation = receivingStation;
+        this.receivingStationObserver = receivingStationObserver;
+        this.storageCapacity = receivingStation.getStorageCapacity();
 
         buildTop();
         buildLeft();
         buildCenter();
-
-        this.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID,
-                CornerRadii.EMPTY, new BorderWidths(1))));
+        this.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(1))));
         this.setMinSize(STATION_SIZE, STATION_SIZE);
 
-        // Licht: rot wenn "picking" (= Paket entnommen), sonst grün
-        observer.sortingProperty().addListener((obs, oldVal, newVal) -> {
-            Platform.runLater(() -> changeLight(newVal));
+        receivingStationObserver.receivingProperty().addListener((obs, oldVal, newVal) -> {
+            changeLight(newVal);
         });
 
-        // Waiting: Grid/Info updaten
-        observer.waitingProperty().addListener((obs, oldVal, newVal) -> {
+        receivingStationObserver.packagesProperty().addListener((obs, oldVal, newVal) -> {
             Platform.runLater(() -> {
-                updatePackages(newVal.doubleValue() / capacity);
-                refreshInfo();
+                updatePackages(newVal.doubleValue() / storageCapacity);
+                setInformation(3, newVal.intValue());
             });
         });
-
-        // BeingSorted: nur Info updaten (optional)
-        observer.beingSortedProperty().addListener((obs, oldVal, newVal) -> {
-            Platform.runLater(this::refreshInfo);
-        });
-
-        // Last ZIP: nur Info updaten (optional)
-        observer.lastZipProperty().addListener((obs, oldVal, newVal) -> {
-            Platform.runLater(this::refreshInfo);
-        });
-
-        refreshInfo();
     }
 
     private void buildTop() {
+        setInformation(3,0);
         VBox infoBox = new VBox(new Label(STATION_NAME), stationInfo);
         infoBox.setAlignment(Pos.CENTER);
         setTop(infoBox);
@@ -90,7 +71,6 @@ public class SortingStationView extends BorderPane {
     private void buildLeft() {
         accessLight.setFill(Color.LIMEGREEN);
         accessLight.setStroke(Color.BLACK);
-
         Rectangle entrance = new Rectangle(DOOR_WIDTH, DOOR_HEIGHT);
         entrance.setFill(Color.WHITE);
         entrance.setStroke(Color.BLACK);
@@ -119,7 +99,7 @@ public class SortingStationView extends BorderPane {
         packagesGrid.getChildren().clear();
         packageViews.clear();
 
-        for (int i = 0; i < PACKAGE_PER_SEC * PACKAGE_PER_SEC; i++) {
+        for (int i = 0; i < PACKAGE_PER_SEC*PACKAGE_PER_SEC; i++) {
 
             Rectangle p = createPackage();
             p.setVisible(false);
@@ -133,37 +113,31 @@ public class SortingStationView extends BorderPane {
     }
 
     private Rectangle createPackage() {
-        Rectangle p = new Rectangle(PACKAGE_WIDTH, PACKAGE_HEIGHT);
+        Rectangle p = new Rectangle( PACKAGE_WIDTH,PACKAGE_HEIGHT);
         p.setFill(Color.BEIGE);
         p.setStroke(Color.BLACK);
         return p;
     }
 
-    // exakt wie bei dir: fillPercent 0..1 -> Anzahl sichtbarer Rechtecke
+
     public void updatePackages(double fillPercent) {
-        int visiblePackages = (int) Math.round(PACKAGE_PER_SEC * PACKAGE_PER_SEC * fillPercent);
+        int visiblePackages =
+                (int) Math.round(PACKAGE_PER_SEC*PACKAGE_PER_SEC * fillPercent);
 
         for (int i = 0; i < packageViews.size(); i++) {
             packageViews.get(i).setVisible(i < visiblePackages);
         }
     }
 
-    private void refreshInfo() {
-        int waiting = observer.waitingProperty().get();
-        int beingSorted = observer.beingSortedProperty().get();
-
-        int zip = observer.lastZipProperty().get();
-        String zipText = (zip <= 0) ? "-" : String.valueOf(zip);
-
-        stationInfo.setText(String.format(INFO_TEMPLATE, waiting, capacity, beingSorted, zipText));
+    public void setInformation(int employees, int packages) {
+        stationInfo.setText(String.format(INFO_TEMPLATE,employees, packages, storageCapacity));
     }
 
-    private void changeLight(boolean picking) {
-        if (picking) {
+    private void changeLight(boolean isReceiving) {
+        if (isReceiving) {
             accessLight.setFill(Color.RED);
-        } else {
+        } else  {
             accessLight.setFill(Color.GREEN);
         }
     }
 }
-

@@ -1,6 +1,6 @@
 package org.example.model.warehouse;
 
-import org.example.model.conveyorBelt.Package;
+import org.example.model.Package;
 
 import java.util.ArrayList;
 import java.util.List;

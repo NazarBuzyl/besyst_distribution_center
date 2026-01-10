@@ -4,20 +4,33 @@ import javafx.animation.AnimationTimer;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import org.example.model.conveyorBelt.ConveyorBelt;
 import org.example.model.conveyorBelt.ConveyorBeltArray;
-import org.example.model.conveyorBelt.Package;
+
 import java.util.*;
 
-public class ConveyorBeltView extends VBox {
 
+/**
+ * @author Finn Kramer
+ *
+ * Diese Klasse beschreibt das GUI-Modul für eine Fließbandreihe.
+ */
+public class ConveyorBeltView extends VBox
+{
+    // Fließbandbreite in Pixeln
     private static final double BELT_WIDTH = 500;
+
+    // Fließbandhöhe in Pixeln
     private static final double BELT_HEIGHT = 60;
+
+    // Paketgröße in Pixeln
     private static final double PACKAGE_SIZE = 20;
+
+    // Paketabstand in Pixeln
     private static final double SPACING = 20;
 
+    // Fließbandreihe
     private final ConveyorBeltArray conveyorBeltArray;
 
     // Zu jedem Band: seine Paket-Rechtecke
@@ -26,9 +39,12 @@ public class ConveyorBeltView extends VBox {
     // Zu jedem Band: sein Pane
     private final Map<ConveyorBelt, Pane> beltPanes = new HashMap<>();
 
-    // Nodes für gerade sortierte Pakete (gemeinsam, über alle Bänder)
-    private final List<Circle> sortingNodes = new ArrayList<>();
 
+    /**
+     * Initialisiere eine Instanz aus einer Fließbandreihe.
+     *
+     * @param conveyorBeltArray Fließbandreihe
+     */
     public ConveyorBeltView(ConveyorBeltArray conveyorBeltArray) {
         this.conveyorBeltArray = conveyorBeltArray;
 
@@ -39,8 +55,10 @@ public class ConveyorBeltView extends VBox {
         startAnimation();
     }
 
-    /* ---------- Initialisierung ---------- */
 
+    /**
+     * Initialisiere alle Fließbänder.
+     */
     private void initBelts() {
         for (ConveyorBelt belt : conveyorBeltArray.getBelts()) {
             Pane beltPane = createBeltPane();
@@ -50,54 +68,69 @@ public class ConveyorBeltView extends VBox {
         }
     }
 
+
+    /**
+     * Erstelle ein Pane für ein Fließband.
+     *
+     * @return Pane eines Fließbands
+     */
     private Pane createBeltPane() {
         Pane pane = new Pane();
-        pane.setPrefSize(BELT_WIDTH + 40, BELT_HEIGHT + 60);
+        pane.setPrefSize(BELT_WIDTH + 40, BELT_HEIGHT + 40);
 
         Rectangle beltRect = new Rectangle(BELT_WIDTH, BELT_HEIGHT);
         beltRect.setFill(Color.DARKGRAY);
         beltRect.setArcHeight(20);
         beltRect.setArcWidth(20);
         beltRect.setLayoutX(20);
-        beltRect.setLayoutY(40);
+        beltRect.setLayoutY(20);
 
         pane.getChildren().add(beltRect);
         return pane;
     }
 
-    /* ---------- Animation ---------- */
 
+    /**
+     * Starte die Animation der Fließbänder.
+     */
     private void startAnimation() {
         AnimationTimer timer = new AnimationTimer() {
             @Override
             public void handle(long now) {
                 renderAllBelts();
-                renderSortingNodes();
             }
         };
         timer.start();
     }
 
-    private void renderAllBelts() {
+
+    /**
+     * Rendere alle Fließbänder.
+     */
+    private void renderAllBelts()
+    {
         for (ConveyorBelt belt : beltPanes.keySet()) {
             renderBelt(belt);
         }
     }
 
-    /* ---------- Rendering eines einzelnen Bands ---------- */
 
-    private void renderBelt(ConveyorBelt belt) {
+    /**
+     * Rendere ein einzelnes Fließband.
+     *
+     * @param belt Fließband
+     */
+    private void renderBelt(ConveyorBelt belt)
+    {
         Pane pane = beltPanes.get(belt);
         List<Rectangle> nodes = packageNodes.get(belt);
 
         try {
             belt.getMutex().acquire();
 
-            List<Package> packages = belt.getPackageList();
+            Deque<Float> positions = belt.getPackagePositions();
 
-
-            // Anzahl Pakete anpassen
-            while (nodes.size() < packages.size()) {
+            while (nodes.size() < positions.size()) {
                 Rectangle pkg = new Rectangle(PACKAGE_SIZE, PACKAGE_SIZE);
                 pkg.setFill(Color.CORNFLOWERBLUE);
                 pkg.setArcWidth(6);
@@ -106,17 +139,16 @@ public class ConveyorBeltView extends VBox {
                 pane.getChildren().add(pkg);
             }
 
-            while (nodes.size() > packages.size()) {
+            while (nodes.size() > positions.size()) {
                 Rectangle r = nodes.remove(nodes.size() - 1);
                 pane.getChildren().remove(r);
             }
 
             int i = 0;
-            for (Package p : packages) {
-                float pos = p.getPosition();
+            for (Float pos : positions) {
                 Rectangle pkg = nodes.get(i++);
                 double x = 20 + (pos / 100.0) * (BELT_WIDTH - PACKAGE_SIZE);
-                double y = 40 + (BELT_HEIGHT - PACKAGE_SIZE) / 2;
+                double y = 20 + (BELT_HEIGHT - PACKAGE_SIZE) / 2;
 
                 pkg.setLayoutX(x);
                 pkg.setLayoutY(y);
@@ -126,34 +158,6 @@ public class ConveyorBeltView extends VBox {
             Thread.currentThread().interrupt();
         } finally {
             belt.getMutex().release();
-        }
-    }
-
-    // Rendern der Knoten für aktuell sortierte Pakete
-    private void renderSortingNodes() {
-        // entferne alte Knoten
-        for (Circle c : new ArrayList<>(sortingNodes)) {
-            Pane parent = (Pane) c.getParent();
-            if (parent != null) parent.getChildren().remove(c);
-        }
-        sortingNodes.clear();
-
-        List<Package> beingSorted = conveyorBeltArray.getBeingSorted();
-        int i = 0;
-        for (Package p : beingSorted) {
-            // Platzieren: über dem obersten Band (oder rotiere über Bänder)
-            int bandIndex = i % conveyorBeltArray.getBelts().size();
-            Pane pane = beltPanes.get(conveyorBeltArray.getBelts().get(bandIndex));
-
-            Circle dot = new Circle(8, Color.CRIMSON);
-            double x = 20 + ((i * 10) % (BELT_WIDTH - PACKAGE_SIZE));
-            double y = 10;
-            dot.setLayoutX(x);
-            dot.setLayoutY(y);
-
-            pane.getChildren().add(dot);
-            sortingNodes.add(dot);
-            i++;
         }
     }
 }

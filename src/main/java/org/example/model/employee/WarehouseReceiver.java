@@ -1,7 +1,8 @@
 package org.example.model.employee;
 import org.example.model.conveyorBelt.ConveyorBelt;
-import org.example.model.conveyorBelt.Package;
+import org.example.model.Package;
 import org.example.model.warehouse.*;
+
 public class WarehouseReceiver extends Employee {
 
     private final Zone zone;
@@ -21,7 +22,7 @@ public class WarehouseReceiver extends Employee {
         this.receiveSpeedMs = receiveSpeedMs;
         setName("Receiver-" + zone + "-" + employeeId);
     }
-
+/*
     @Override
     public void run() {
         try {
@@ -40,5 +41,6 @@ public class WarehouseReceiver extends Employee {
             interrupt();
         }
     }
+ */
 }
 

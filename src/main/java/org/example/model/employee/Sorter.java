@@ -1,13 +1,8 @@
 package org.example.model.employee;
 
-import org.example.model.conveyorBelt.ConveyorBeltArray;
-<<<<<<< Updated upstream
-import org.example.model.conveyorBelt.Package;
-import org.example.model.sorting.SortingRoom;
-=======
-import org.example.model.Package;
 import org.example.model.SortingRoom;
->>>>>>> Stashed changes
+import org.example.model.conveyorBelt.ConveyorBeltArray;
+import org.example.model.Package;
 
 public class Sorter extends Employee {
 
@@ -69,4 +64,3 @@ public class Sorter extends Employee {
         return 4;                   // Rest = Mitte/Süd (z.B. 281xx–2822x)
     }
 }
-

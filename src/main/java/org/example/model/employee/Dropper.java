@@ -1,52 +1,42 @@
 package org.example.model.employee;
 
-<<<<<<< Updated upstream
-import org.example.model.conveyorBelt.Package;
-import org.example.model.sorting.SortingRoom;
-=======
-import org.example.model.Package;
 import org.example.model.conveyorBelt.ConveyorBeltArray;
->>>>>>> Stashed changes
-import org.example.model.warehouse.Zone;
+import org.example.model.ReceivingStation;
+import org.example.model.Package;
 
 public class Dropper extends Employee
 {
-    public static final int DROP_SPEED = 2000; // speed in ms
+    public static final int DROP_SPEED = 500; // speed in ms
 
-    private final SortingRoom target;
+    private final ConveyorBeltArray target;
+    private final ReceivingStation receivingStation;
 
-    public Dropper(int employeeId, SortingRoom target)
+    public Dropper(int employeeId, ConveyorBeltArray target, ReceivingStation receivingStation)
     {
         super(employeeId);
         this.target = target;
+        this.receivingStation = receivingStation;
     }
 
     @Override
-<<<<<<< Updated upstream
-    public void run() {
-        try {
-            while (true) {
-                int zipCode = Zone.randomPlz();
-                Package p = new Package(zipCode);
-
-                this.target.submitUnsorted(p);
-=======
     public void run()
     {
         try
         {
             while (true)
             {
-                int zipCode = Zone.randomPlz();
-                Package p = new Package(zipCode);
+                // hole ein Package aus der ReceivingStation (blockiert bis eines verfügbar ist)
+                Package p = this.receivingStation.takePackageForDropper();
 
+                // legt auf ein freies Band (blockiert, wenn alle Eingänge voll sind)
                 this.target.dropPackage(this.getEmployeeId(), p);
->>>>>>> Stashed changes
 
                 Thread.sleep(DROP_SPEED);
             }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+        }
+        catch (InterruptedException e)
+        {
+            interrupt();
         }
     }
 }

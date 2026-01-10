@@ -3,32 +3,33 @@ package org.example;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-<<<<<<< Updated upstream
-=======
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+
 import org.example.model.*;
-import org.example.model.conveyorBelt.ConveyorBelt;
->>>>>>> Stashed changes
 import org.example.model.conveyorBelt.ConveyorBeltArray;
 import org.example.model.employee.Dropper;
 import org.example.model.employee.Sorter;
-<<<<<<< Updated upstream
-import org.example.model.sorting.SortingRoom;
-=======
+import org.example.model.BeltToSortingIntake;
+import org.example.model.ReceivingStation;
+import org.example.model.ReceivingStationObserver;
+import org.example.model.TransportInput;
+import org.example.model.TransportObserver;
+import org.example.view.ReceivingStationView;
+import org.example.view.SortingStationView;
+import org.example.view.TransportSection;
+import org.example.view.conveyorBelt.ConveyorBeltView;
+
 import org.example.model.employee.Dispatcher;
 import org.example.model.BeltToWarehouseIntake;
 import org.example.model.warehouse.WarehouseBuffer;
 import org.example.model.warehouse.Zone;
-import org.example.view.ReceivingStationView;
-import org.example.view.SortingStationView;
-import org.example.view.TransportSection;
-import org.example.model.sorting.BeltToSortingIntake;
-import org.example.view.TruckView;
->>>>>>> Stashed changes
-import org.example.view.conveyorBelt.ConveyorBeltView;
-import org.example.view.sorting.SortingRoomView;
 
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * JavaFX App
@@ -37,42 +38,22 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) {
+        ReceivingStationObserver receivingStationObserver = new ReceivingStationObserver();
+        ReceivingStation receivingStation = new ReceivingStation(receivingStationObserver);
 
-<<<<<<< Updated upstream
-        // --- Domain ---
-        ConveyorBeltArray conveyorBeltArray = new ConveyorBeltArray(5);
-        SortingRoom sortingRoom = new SortingRoom();
-
-        Dropper dropper = new Dropper(1, sortingRoom);
-        dropper.setDaemon(true);
-        dropper.start();
-
-        // Start a Sorter so we can see sorting in the UI
-        Sorter sorter = new Sorter(2, conveyorBeltArray, sortingRoom);
-        sorter.setDaemon(true);
-        sorter.start();
-
-        // --- GUI ---
-        ConveyorBeltView beltView = new ConveyorBeltView(conveyorBeltArray);
-        SortingRoomView sortingView = new SortingRoomView(sortingRoom);
-
-        HBox root = new HBox(sortingView, beltView);
-
-        Scene scene = new Scene(new StackPane(root), 1200, 800);
-=======
         SortingStationObserver sortingStationObserver = new SortingStationObserver();
         SortingRoom sortingRoom = new SortingRoom(sortingStationObserver);
         SortingStationView sortingStationView = new SortingStationView(sortingRoom, sortingStationObserver);
 
         TransportSection transportSection = initTransportSection(receivingStation);
-        ReceivingStationView receivingStationView =  new ReceivingStationView(receivingStation, receivingStationObserver);
+        ReceivingStationView receivingStationView = new ReceivingStationView(receivingStation, receivingStationObserver);
 
         // --------- 1) Eingangsbänder (3 Stück) ---------
         ConveyorBeltArray inputBelts = new ConveyorBeltArray("IN", 3);
         ConveyorBeltView inputBeltsView = new ConveyorBeltView(inputBelts);
 
         // Dropper erzeugt Pakete + legt sie auf die Eingangsbänder
-        Dropper dropper = new Dropper(1, inputBelts);
+        Dropper dropper = new Dropper(1, inputBelts, receivingStation);
         dropper.setDaemon(true);
         dropper.start();
 
@@ -90,7 +71,7 @@ public class App extends Application {
         intake3.start();
 
         // --------- 3) Ausgangsbänder (für Sortierergebnisse) ---------
-        ConveyorBeltArray outputBelts = new ConveyorBeltArray("OUT", 4);
+        ConveyorBeltArray outputBelts = new ConveyorBeltArray("OUT", 5);
         ConveyorBeltView outputBeltsView = new ConveyorBeltView(outputBelts);
 
         // --------- 4) Sorter: SortingRoom -> outputBelts ---------
@@ -121,7 +102,7 @@ public class App extends Application {
         d1.start(); d2.start(); d3.start(); d4.start(); d5.start();
 
 
-        // Set up all view elements.
+        // --------- UI ---------
         HBox root = new HBox(
                 transportSection,
                 receivingStationView,
@@ -131,9 +112,7 @@ public class App extends Application {
         );
         root.setLayoutX(30);
 
-        // Set up scene.
         var scene = new Scene(root, 1800, 480);
->>>>>>> Stashed changes
         stage.setScene(scene);
         stage.setTitle("Distribution Center Simulation");
         stage.show();
@@ -142,6 +121,25 @@ public class App extends Application {
     @Override
     public void stop() {
         System.out.println("JavaFX Application shutting down.");
+    }
+
+    private TransportSection initTransportSection(ReceivingStation receivingStation) {
+        List<TransportObserver> transportObservers = new ArrayList<>();
+        for (int i = 1; i <= 4; i++) {
+            transportObservers.add(new TransportObserver());
+        }
+
+        List<TransportInput> transportInputs = new ArrayList<>();
+        transportInputs.add(new TransportInput(transportObservers.get(0), 1, receivingStation, 30000, 100));
+        transportInputs.add(new TransportInput(transportObservers.get(1), 2, receivingStation, 5000, 10));
+        transportInputs.add(new TransportInput(transportObservers.get(2), 3, receivingStation, 60000, 200));
+        // transportInputs.add(new TransportInput(transportObservers.get(3), 4, receivingStation, 5000, 20));
+
+        for (TransportInput transportInput : transportInputs) {
+            transportInput.start();
+        }
+
+        return new TransportSection(transportInputs, transportObservers);
     }
 
     public static void main(String[] args) {

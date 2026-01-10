@@ -2,7 +2,26 @@ package org.example.model.warehouse;
 
 public class Zone {
 
-    // einfache feste Liste
+    // ---------- NEU: Name für Ausgabe/Dispatcher ----------
+    private final String name;
+
+    public Zone(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        return name;
+    }
+
+    // ---------- NEU: Zonen passend zu Sorter-Mapping (Band 1..5) ----------
+    public static final Zone OUT_1 = new Zone("OUT_BAND_1 (28717+)");
+    public static final Zone OUT_2 = new Zone("OUT_BAND_2 (28307+)");
+    public static final Zone OUT_3 = new Zone("OUT_BAND_3 (28237+)");
+    public static final Zone OUT_4 = new Zone("OUT_BAND_4 (Rest)");
+    public static final Zone OUT_5_INVALID = new Zone("OUT_BAND_5 (INVALID)");
+
+    // ---------- ALT (bleibt): PLZ Generator ----------
     public static final int[] VALID_PLZ = {
             28195, 28197, 28199,
             28201, 28203, 28205, 28207, 28209,
@@ -14,10 +33,8 @@ public class Zone {
             28717, 28719, 28755, 28757, 28759, 28777, 28779
     };
 
-    // zufällige gültige PLZ zurückgeben
     public static int randomPlz() {
         int index = (int) (Math.random() * VALID_PLZ.length);
         return VALID_PLZ[index];
     }
 }
-

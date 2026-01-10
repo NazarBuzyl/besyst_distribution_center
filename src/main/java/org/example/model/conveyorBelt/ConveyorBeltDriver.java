@@ -5,23 +5,51 @@ import java.util.Deque;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
-public class ConveyorBeltDriver extends Thread {
+/**
+ * Klasse für einen Fließbandtreiber
+ *
+ * @author Finn Kramer
+ */
+public class ConveyorBeltDriver extends Thread
+{
+    // Geschwindigkeit
+    public static final float SPEED = 50;
 
-    public static final float SPEED = 10;
+    // Animations-Framerate
     public static final int FPS = 12;
+
+    // Unterbrechnungszeit pro Frame
     public static final int REFRESHING_RATE = 1000 / FPS;
 
+    // Paketabstand
     public static final float MIN_DISTANCE = 100F / (ConveyorBelt.CAPACITY - 1);
 
+    // Paketgeschwindigkeit
     public static final float POSITION_CHANGE_RATE = (1F / FPS) * SPEED;
 
+    // Eingang gesperrt
     private boolean entranceLocked = false;
+
+    // Ausgang gesperrt
     private boolean exitLocked = true;
 
+    // Fließband
     private final ConveyorBelt target;
+
+    // beschreibbare Fließbänder
     private final BlockingQueue<ConveyorBelt> writableQueue;
+
+    // lesbare Fließbänder
     private final BlockingQueue<ConveyorBelt> readableQueue;
 
+
+    /**
+     * Erzeugt eine Instanz aus einem Fließband und zwei Warteschlangen.
+     *
+     * @param target anzutreibendes Fließband
+     * @param writableQueue Warteschlange mit beschreibbaren Fließbändern
+     * @param readableQueue Warteschlange mit lesbaren Fließbändern
+     */
     public ConveyorBeltDriver(ConveyorBelt target,
                               BlockingQueue<ConveyorBelt> writableQueue,
                               BlockingQueue<ConveyorBelt> readableQueue) {
@@ -30,6 +58,12 @@ public class ConveyorBeltDriver extends Thread {
         this.readableQueue = readableQueue;
     }
 
+
+    /**
+     * run-Methode des Threads
+     *
+     * Aktualisiere das Fließband fortlaufend.
+     */
     @Override
     public void run() {
         while (!isInterrupted()) {
@@ -42,51 +76,58 @@ public class ConveyorBeltDriver extends Thread {
         }
     }
 
-<<<<<<< Updated upstream
-=======
-
 
     /**
      * Aktualisiere das Fließband.
      *
      * Diese Methode kann den aufrufenden Thread unterbrechen.
      */
->>>>>>> Stashed changes
     private void updateConveyorBelt() throws InterruptedException {
 
         target.getMutex().acquire();
         try {
-            var packages = target.getPackageList();
+            Deque<Float> deque = target.getPackagePositions();
+            List<Float> positions = new ArrayList<>(deque);
 
-            for (int i = 0; i < packages.size(); i++) {
-                Package p = packages.get(i);
-                float pos = p.getPosition();
+            for (int i = 0; i < positions.size(); i++) {
+                float pos = positions.get(i);
 
-                if (i < packages.size() - 1) {
-                    float next = packages.get(i + 1).getPosition();
+                if (i < positions.size() - 1) {
+                    float next = positions.get(i + 1);
                     if (next - pos < MIN_DISTANCE) continue;
                 }
 
                 if (pos < 100F) {
-                    p.setPosition(Math.min(pos + POSITION_CHANGE_RATE, 100F));
+                    positions.set(i,
+                            Math.min(pos + POSITION_CHANGE_RATE, 100F));
                 }
             }
 
-            updateLocks(packages);
+            deque.clear();
+            deque.addAll(positions);
+
+            updateLocks(positions);
 
         } finally {
             target.getMutex().release();
         }
     }
 
-    private void updateLocks(List<Package> packages) {
-        if (packages.isEmpty() || packages.get(0).getPosition() >= MIN_DISTANCE) {
+    /**
+     * Aktualisiere die Sperrvariablen.
+     *
+     * @param positions Paketpositionen
+     */
+    private void updateLocks(List<Float> positions)
+    {
+        if (positions.isEmpty() || positions.get(0) >= MIN_DISTANCE) {
             unlockEntrance();
         } else {
             entranceLocked = true;
         }
 
-        if (!packages.isEmpty() && packages.get(packages.size() - 1).getPosition() >= 100F) {
+        if (!positions.isEmpty()
+                && positions.get(positions.size() - 1) >= 100F) {
             unlockExit();
         } else {
             exitLocked = true;
@@ -94,6 +135,9 @@ public class ConveyorBeltDriver extends Thread {
     }
 
 
+    /**
+     * Entsperre den Eingang.
+     */
     private void unlockEntrance()
     {
         if (entranceLocked) {
@@ -103,6 +147,9 @@ public class ConveyorBeltDriver extends Thread {
         entranceLocked = false;
     }
 
+    /**
+     * Entsperre den Ausgang.
+     */
     private void unlockExit() {
         if (exitLocked) {
             target.getSemaRead().release();

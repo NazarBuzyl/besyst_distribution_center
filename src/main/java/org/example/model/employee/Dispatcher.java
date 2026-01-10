@@ -1,7 +1,7 @@
 package org.example.model.employee;
 
-import org.example.model.conveyorBelt.Package;
 import org.example.model.warehouse.*;
+import org.example.model.Package;
 
 import java.util.List;
 
