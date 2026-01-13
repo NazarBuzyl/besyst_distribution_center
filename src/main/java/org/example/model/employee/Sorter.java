@@ -4,9 +4,11 @@ import org.example.model.SortingRoom;
 import org.example.model.conveyorBelt.ConveyorBeltArray;
 import org.example.model.Package;
 
+//Anzahl der Employee soll sichtbar in der gui gemacht werden sortierung
+
 public class Sorter extends Employee {
 
-    public static final int SORTING_SPEED = 1000;
+    public static final int SORTING_SPEED = 500;
 
     private final ConveyorBeltArray beltArray;
     private final SortingRoom sortingRoom;

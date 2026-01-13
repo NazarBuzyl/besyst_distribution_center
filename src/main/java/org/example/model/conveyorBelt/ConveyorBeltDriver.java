@@ -13,7 +13,7 @@ import java.util.concurrent.BlockingQueue;
 public class ConveyorBeltDriver extends Thread
 {
     // Geschwindigkeit
-    public static final float SPEED = 50;
+    public static final float SPEED = 25;
 
     // Animations-Framerate
     public static final int FPS = 12;

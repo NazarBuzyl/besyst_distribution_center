@@ -19,7 +19,7 @@ public class ConveyorBelt
     private final String id;
 
     // Fließband-Kapazität
-    public static final int CAPACITY = 5;
+    public static final int CAPACITY = 6;
 
     // Paketpositionen
     private final Deque<Float> packagePositions = new LinkedList<>();

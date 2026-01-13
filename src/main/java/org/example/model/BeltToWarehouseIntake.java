@@ -25,7 +25,7 @@ public class BeltToWarehouseIntake extends Thread {
         try {
             while (!isInterrupted()) {
                 Package p = outputBelts.pickPackageFrom(beltIndex, employeeId); // wartet bis Ende erreicht
-                warehouse.store(p); // blockiert wenn Warehouse voll (ok)
+                warehouse.store(p); // blockiert wenn Warehouse voll
             }
         } catch (InterruptedException e) {
             interrupt();

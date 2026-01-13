@@ -10,7 +10,7 @@ import java.util.concurrent.Semaphore;
 
 public class SortingRoom {
 
-    public static final int DEFAULT_CAPACITY = 200;
+    public static final int DEFAULT_CAPACITY = 10;
 
     private final int capacity;
 
