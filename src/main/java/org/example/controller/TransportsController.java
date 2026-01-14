@@ -1,6 +1,8 @@
 package org.example.controller;
 
+import javafx.beans.property.FloatProperty;
 import org.example.model.stations.receiving.ReceivingStation;
+import org.example.model.transport.DataStatusTransports;
 import org.example.model.transport.TransportInput;
 import org.example.model.transport.TransportObserver;
 import org.example.view.SectionTransport;
@@ -12,6 +14,7 @@ import java.util.Map;
 
 public class TransportsController {
     private final SectionTransport sectionTransport;
+    private final DataStatusTransports dataStateTransport = new DataStatusTransports();
     private final Map<TransportInput, TransportObserver> transports;
     private final ReceivingStation receivingStation;
 
@@ -32,22 +35,22 @@ public class TransportsController {
 //        transportInputs.add(addTransport(transportObservers.get(3), 4, 5000, 20));
     }
 
-    public TransportInput addTransport(int id, int deliveryTime, int deliveryPackages) {
+    public TransportInput addTransport(int id, int deliveryTimeMS, int deliveryPackages) {
         TransportObserver transportObserver = new TransportObserver();
-        TransportInput transport = new TransportInput(transportObserver, id, receivingStation, deliveryTime, deliveryPackages);
+        TransportInput transport = new TransportInput(transportObserver, id, receivingStation, deliveryTimeMS, deliveryPackages);
         transport.start();
+        dataStateTransport.addDataTransport(deliveryTimeMS/1000, deliveryPackages);
         transports.put(transport, transportObserver);
         sectionTransport.addTransportView(transport, transportObserver);
 
         return transport;
     }
 
-    public void addTransport(TransportInput transportInput, TransportObserver transportObserver) {
-        transports.put(transportInput, transportObserver);
-        sectionTransport.addTransportView(transportInput, transportObserver);
-    }
-
     public SectionTransport getSectionTransport() {
         return sectionTransport;
+    }
+
+    public FloatProperty inputSpeedProperty() {
+        return dataStateTransport.inputSpeedProperty();
     }
 }

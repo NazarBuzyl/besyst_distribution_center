@@ -1,5 +1,6 @@
 package org.example.view;
 
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -9,6 +10,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import org.example.controller.TransportsController;
 import org.example.model.transport.TransportInput;
 import org.example.model.transport.TransportObserver;
@@ -26,6 +28,7 @@ public class SectionTransport extends BorderPane {
     private final TransportsController controller;
 
     private final VBox trucksVBox;
+    private final Text inputSpeedText = new Text();
     // --- Input controls ---
     private final Slider timeSlider = new Slider(2, 90, 10);
     private final Slider packagesSlider = new Slider(10, 200, 10);
@@ -39,10 +42,17 @@ public class SectionTransport extends BorderPane {
 
         setMinWidth(350);
 
+        setInputSpeedText(0.0);
         setTop(createInputPane());
         setCenter(trucksVBox);
         trucksVBox.setPadding(new Insets(10));
         setAlignment(trucksVBox, Pos.CENTER);
+
+        controller.inputSpeedProperty().addListener((obs, oldVal, newVal) -> {
+            Platform.runLater(() -> {
+                setInputSpeedText(newVal.floatValue());
+            });
+        });
     }
 
     public void addTransportView(TransportInput transport, TransportObserver observer) {
@@ -85,7 +95,8 @@ public class SectionTransport extends BorderPane {
         VBox box = new VBox(8,
                 new HBox(10, new Label("Delivery Time (s):"), timeSlider, timeValue),
                 new HBox(10, new Label("Delivery Packages:"), packagesSlider, packagesValue),
-                addTransportButton
+                addTransportButton,
+                inputSpeedText
         );
 
         box.setPadding(new Insets(10));
@@ -100,5 +111,9 @@ public class SectionTransport extends BorderPane {
         int packages = (int) packagesSlider.getValue();
 
         controller.addTransport(0, deliveryTime, packages);
+    }
+
+    private void setInputSpeedText(double speed) {
+        inputSpeedText.setText(String.format("Current Input: %.1f packages/second", speed));
     }
 }

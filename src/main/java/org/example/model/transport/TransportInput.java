@@ -19,7 +19,7 @@ public class TransportInput extends Thread {
     private final int transportId;
     private final ReceivingStation target;
 
-    private final int delivery_time;
+    private final int delivery_time_ms;
     private final int delivered_packages; // todo - List<Package>
     private final int unloading_time;
 
@@ -30,7 +30,7 @@ public class TransportInput extends Thread {
         this.transportObserver = observer;
         this.transportId = id;
         this.target = target;
-        this.delivery_time = delivery_time;
+        this.delivery_time_ms = delivery_time;
         this.delivered_packages = delivered_packages;
         this.unloading_time = delivered_packages*DEFAULT_UNLOADING_FAKTOR;
     }
@@ -39,7 +39,7 @@ public class TransportInput extends Thread {
         this.transportObserver = observer;
         this.transportId = id;
         this.target = target;
-        this.delivery_time = DEFAULT_DELIVERY_TIME;
+        this.delivery_time_ms = DEFAULT_DELIVERY_TIME;
         this.delivered_packages = DEFAULT_DELIVERED_PACKAGES;
         this.unloading_time =  DEFAULT_DELIVERED_PACKAGES * DEFAULT_UNLOADING_FAKTOR;
     }
@@ -62,7 +62,7 @@ public class TransportInput extends Thread {
      */
     private void delivering() throws InterruptedException {
             this.transportObserver.drive();
-            Thread.sleep(this.delivery_time);
+            Thread.sleep(this.delivery_time_ms);
             this.transportObserver.park();
             target.takeParkingPlace(this);
     }
@@ -89,7 +89,7 @@ public class TransportInput extends Thread {
     }
 
     public int getDeliveryTime() {
-        return this.delivery_time;
+        return this.delivery_time_ms;
     }
 
     public int getUnloadingTime() {
