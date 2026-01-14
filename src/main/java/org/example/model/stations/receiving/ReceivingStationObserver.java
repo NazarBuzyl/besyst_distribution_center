@@ -12,6 +12,7 @@ public class ReceivingStationObserver {
 
     private final BooleanProperty receiving = new SimpleBooleanProperty(false);
     private final IntegerProperty packages = new SimpleIntegerProperty(0);
+    private final IntegerProperty totalPackages = new SimpleIntegerProperty(0);
     private final IntegerProperty employees = new SimpleIntegerProperty(0);
 
 
@@ -40,5 +41,9 @@ public class ReceivingStationObserver {
 
     public void finishReceiving() {
         receiving.set(false);
+    }
+
+    public void addToTotalPackage(int newPackages) {
+        totalPackages.add(newPackages);
     }
 }

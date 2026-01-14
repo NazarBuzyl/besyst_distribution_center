@@ -3,6 +3,8 @@ package org.example.view;
 import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.scene.Group;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
@@ -34,6 +36,9 @@ public class TruckView extends Group {
     private Circle rearWheel;
     private Circle frontWheel;
     private Text infoText;
+    private HBox stateInfo;
+    private LightAccessibility unloadingLight;
+    private LightAccessibility transportingLight;
 
     private Rotate truckRotateY;
     private Rotate doorRotate;
@@ -50,10 +55,19 @@ public class TruckView extends Group {
         renderTruck();
 
         transportObserver.unloadingProperty().addListener((obs, oldVal, newVal) -> {
+            Platform.runLater(() -> {
+                this.unloadingLight.setAccessibility(newVal);// nicht thread-sicher
+            });
             if (newVal) {
                 // UI-Operationen dürfen nur im JavaFX Application Thread ausgeführt werden.
                 Platform.runLater(this::unload); // nicht thread-sicher
             }
+        });
+        transportObserver.transportingProperty().addListener((obs, oldVal, newVal) -> {
+            // UI-Operationen dürfen nur im JavaFX Application Thread ausgeführt werden.
+            Platform.runLater(() -> {
+                this.transportingLight.setAccessibility(newVal);// nicht thread-sicher
+            });
         });
     }
 
@@ -63,8 +77,9 @@ public class TruckView extends Group {
         renderCabin();
         renderInfoText();
         renderWheel();
+        renderStateInfo();
 
-        getChildren().addAll(cargo, cargoDoor, cabin, infoText, rearWheel, frontWheel);
+        getChildren().addAll(cargo, cargoDoor, cabin, infoText, rearWheel, frontWheel, stateInfo);
 
         truckRotateY = new Rotate(0, totalWidth / 2, totalHeight / 2, 0, Rotate.Y_AXIS);
         getTransforms().add(truckRotateY);
@@ -97,12 +112,26 @@ public class TruckView extends Group {
         infoText.setY(distance * 2);
     }
 
+    private void renderStateInfo() {
+        Text textLight = new Text(String.format("Unloading:%nTransporting:"));
+        this.unloadingLight = new LightAccessibility(5, false);
+        this.transportingLight = new LightAccessibility(5, true);
+        VBox stateLightBox = new VBox(unloadingLight, transportingLight);
+        stateLightBox.setSpacing(8);
+
+        this.stateInfo = new HBox(textLight, stateLightBox);
+        stateInfo.setLayoutX(DOOR_WIDTH + CARGO_WIDTH);
+//        stateInfo.setLayoutY(HEIGHT - CABIN_SIZE);
+    }
+
     private void renderCabin() {
         this.cabin = new Rectangle(CABIN_SIZE, CABIN_SIZE);
         cabin.setFill(Color.DARKGRAY);
         cabin.setStroke(Color.BLACK);
         cabin.setX(DOOR_WIDTH + CARGO_WIDTH);
         cabin.setY(HEIGHT - CABIN_SIZE);
+
+
     }
 
     private void renderWheel() {

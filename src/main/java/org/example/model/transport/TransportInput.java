@@ -61,7 +61,9 @@ public class TransportInput extends Thread {
      * @throws InterruptedException
      */
     private void delivering() throws InterruptedException {
+            this.transportObserver.drive();
             Thread.sleep(this.delivery_time);
+            this.transportObserver.park();
             target.takeParkingPlace(this);
     }
 

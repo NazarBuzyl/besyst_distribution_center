@@ -62,6 +62,7 @@ public class ReceivingStation extends PackageStorage {
         mutex.acquire();
         this.storage += packages;
         System.out.printf(LocalTime.now().withNano(0) + CURRENT_STATE_MESSAGE, this.storage);
+        receivingStationObserver.addToTotalPackage(packages);
         receivingStationObserver.changePackages(this.storage);
         mutex.release();
         System.out.println("Wartende Werkzeuge" + input.getQueueLength()); // todo - test
