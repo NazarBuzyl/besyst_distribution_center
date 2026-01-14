@@ -13,6 +13,8 @@ import org.example.model.stations.receiving.ReceivingStationObserver;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -31,6 +33,7 @@ public class ReceivingStationView extends BorderPane {
 
 
     private final Label stationInfo = new Label();
+    private final Label totalPackageInfo = new Label();
     private final LightAccessibility accessLight = new LightAccessibility(LIGHT_SIZE);
     private final List<PackageView> packageViews = new LinkedList<>();
     private final GridPane packagesGrid = new GridPane();
@@ -57,6 +60,12 @@ public class ReceivingStationView extends BorderPane {
             });
         });
 
+        receivingStationObserver.totalPackagesProperty().addListener((obs, oldVal, newVal) -> {
+            Platform.runLater(() -> {
+                setTotalPackagesInformation(newVal.intValue());
+            });
+        });
+
         receivingStationObserver.packagesProperty().addListener((obs, oldVal, newVal) -> {
             // UI-Operationen dürfen nur im JavaFX Application Thread ausgeführt werden.
             Platform.runLater(() -> {
@@ -68,7 +77,8 @@ public class ReceivingStationView extends BorderPane {
 
     private void buildTop() {
         setInformation(3,0);
-        VBox infoBox = new VBox(new Label(STATION_NAME), stationInfo); // UI-Elementen auf der oberen Seite
+        setTotalPackagesInformation(0);
+        VBox infoBox = new VBox(new Label(STATION_NAME), stationInfo, totalPackageInfo); // UI-Elementen auf der oberen Seite
         infoBox.setAlignment(Pos.CENTER);
         setTop(infoBox);
     }
@@ -126,5 +136,9 @@ public class ReceivingStationView extends BorderPane {
 
     public void setInformation(int employees, int packages) {
         stationInfo.setText(String.format(INFO_TEMPLATE,employees, packages, storageCapacity));
+    }
+
+    public void setTotalPackagesInformation(int totalPackages) {
+        totalPackageInfo.setText(String.format("Total Packages: %d", totalPackages));
     }
 }

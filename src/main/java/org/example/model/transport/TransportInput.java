@@ -99,4 +99,8 @@ public class TransportInput extends Thread {
     public int getTransportId() {
         return this.transportId;
     }
+
+    public TransportObserver getTransportObserver() {
+        return this.transportObserver;
+    }
 }

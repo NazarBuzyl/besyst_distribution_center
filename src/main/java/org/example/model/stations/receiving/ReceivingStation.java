@@ -65,7 +65,6 @@ public class ReceivingStation extends PackageStorage {
         receivingStationObserver.addToTotalPackage(packages);
         receivingStationObserver.changePackages(this.storage);
         mutex.release();
-        System.out.println("Wartende Werkzeuge" + input.getQueueLength()); // todo - test
         receivingStationObserver.finishReceiving(); // Observer
 
         semaRead.release(packages);

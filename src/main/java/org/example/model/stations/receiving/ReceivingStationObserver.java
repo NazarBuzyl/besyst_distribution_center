@@ -19,6 +19,7 @@ public class ReceivingStationObserver {
     public BooleanProperty receivingProperty() {
         return receiving;
     }
+    public IntegerProperty totalPackagesProperty() {return totalPackages;}
 
     public IntegerProperty packagesProperty() {
         return packages;
@@ -44,6 +45,6 @@ public class ReceivingStationObserver {
     }
 
     public void addToTotalPackage(int newPackages) {
-        totalPackages.add(newPackages);
+        totalPackages.set(totalPackages.getValue() + newPackages);
     }
 }

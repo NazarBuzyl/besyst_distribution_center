@@ -9,4 +9,7 @@ module org.example {
     exports org.example.model.transport;
     exports org.example.model.stations;
     exports org.example.model.stations.receiving;
+
+    exports org.example.view;
+    exports org.example.controller;
 }
