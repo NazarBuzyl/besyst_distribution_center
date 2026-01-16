@@ -2,12 +2,14 @@ package org.example.view;
 
 import javafx.application.Platform;
 import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 
+import org.example.model.SortingManager;
 import org.example.model.SortingRoom;
 import org.example.model.SortingStationObserver;
 
@@ -24,41 +26,32 @@ public class SortingStationView extends BorderPane {
 
     private static final int STATION_SIZE = 300;
 
-    private static final int DOOR_HEIGHT = 100;
-    private static final int DOOR_WIDTH = 10;
-    private static final int LIGHT_SIZE = 10;
-
     private static final int PACKAGE_HEIGHT = 25;
     private static final int PACKAGE_WIDTH = 35;
     private static final int PACKAGE_PER_SEC = 3; // 3x3 = 9 slots wie bei dir
 
     private final Label stationInfo = new Label();
-    private final Circle accessLight = new Circle(LIGHT_SIZE);
 
     private final List<Rectangle> packageViews = new LinkedList<>();
     private final GridPane packagesGrid = new GridPane();
 
     private final SortingRoom sortingRoom;
+    private final SortingManager manager;
     private final SortingStationObserver observer;
     private final int capacity;
 
-    public SortingStationView(SortingRoom sortingRoom, SortingStationObserver observer) {
+    public SortingStationView(SortingRoom sortingRoom, SortingStationObserver observer, SortingManager manager) {
         this.sortingRoom = sortingRoom;
         this.observer = observer;
-        this.capacity = sortingRoom.getCapacity(); // bitte in SortingRoom anbieten
+        this.manager = manager;
+        this.capacity = sortingRoom.getCapacity();
 
         buildTop();
-        buildLeft();
         buildCenter();
 
         this.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID,
                 CornerRadii.EMPTY, new BorderWidths(1))));
         this.setMinSize(STATION_SIZE, STATION_SIZE);
-
-        // Licht: rot wenn "picking" (= Paket entnommen), sonst grün
-        observer.sortingProperty().addListener((obs, oldVal, newVal) -> {
-            Platform.runLater(() -> changeLight(newVal));
-        });
 
         // Waiting: Grid/Info updaten
         observer.waitingProperty().addListener((obs, oldVal, newVal) -> {
@@ -82,24 +75,29 @@ public class SortingStationView extends BorderPane {
     }
 
     private void buildTop() {
-        VBox infoBox = new VBox(new Label(STATION_NAME), stationInfo);
+        Label title = new Label(STATION_NAME);
+
+        Button plus = new Button("+");
+        Button minus = new Button("-");
+
+        plus.setOnAction(e -> manager.addSorter());
+        minus.setOnAction(e -> manager.removeSorter());
+
+        Label sorterCount = new Label();
+        sorterCount.textProperty().bind(
+                manager.countProperty().asString("Sorter: %d")
+        );
+
+        HBox controls = new HBox(10, minus, sorterCount, plus);
+        controls.setAlignment(Pos.CENTER);
+
+        VBox infoBox = new VBox(5, title, controls, stationInfo);
         infoBox.setAlignment(Pos.CENTER);
+
         setTop(infoBox);
     }
 
-    private void buildLeft() {
-        accessLight.setFill(Color.LIMEGREEN);
-        accessLight.setStroke(Color.BLACK);
 
-        Rectangle entrance = new Rectangle(DOOR_WIDTH, DOOR_HEIGHT);
-        entrance.setFill(Color.WHITE);
-        entrance.setStroke(Color.BLACK);
-
-        VBox box = new VBox(accessLight, entrance);
-        box.setAlignment(Pos.CENTER);
-        setLeft(box);
-        box.setTranslateX(-LIGHT_SIZE);
-    }
 
     private void buildCenter() {
         int gap = 1;
@@ -156,14 +154,6 @@ public class SortingStationView extends BorderPane {
         String zipText = (zip <= 0) ? "-" : String.valueOf(zip);
 
         stationInfo.setText(String.format(INFO_TEMPLATE, waiting, capacity, beingSorted, zipText));
-    }
-
-    private void changeLight(boolean picking) {
-        if (picking) {
-            accessLight.setFill(Color.RED);
-        } else {
-            accessLight.setFill(Color.GREEN);
-        }
     }
 }
 

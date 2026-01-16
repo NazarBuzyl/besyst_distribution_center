@@ -43,7 +43,13 @@ public class App extends Application {
 
         SortingStationObserver sortingStationObserver = new SortingStationObserver();
         SortingRoom sortingRoom = new SortingRoom(sortingStationObserver);
-        SortingStationView sortingStationView = new SortingStationView(sortingRoom, sortingStationObserver);
+
+        ConveyorBeltArray outputBelts = new ConveyorBeltArray("OUT", 4);
+        ConveyorBeltView outputBeltsView = new ConveyorBeltView(outputBelts);
+
+        SortingManager manager = new SortingManager(sortingRoom, outputBelts);
+
+        SortingStationView sortingStationView = new SortingStationView(sortingRoom, sortingStationObserver, manager);
 
         TransportSection transportSection = initTransportSection(receivingStation);
         ReceivingStationView receivingStationView = new ReceivingStationView(receivingStation, receivingStationObserver);
@@ -70,36 +76,34 @@ public class App extends Application {
         intake2.start();
         intake3.start();
 
-        // --------- 3) Ausgangsbänder (für Sortierergebnisse) ---------
-        ConveyorBeltArray outputBelts = new ConveyorBeltArray("OUT", 5);
-        ConveyorBeltView outputBeltsView = new ConveyorBeltView(outputBelts);
 
         // --------- 4) Sorter: SortingRoom -> outputBelts ---------
-        Sorter sorter = new Sorter(201, outputBelts, sortingRoom);
-        sorter.setDaemon(true);
-        sorter.start();
+        int SORTER_COUNT = 0;
+        for (int i = 0; i < SORTER_COUNT; i++) {
+            int sorterId = 201 + i;
+            Sorter sorter = new Sorter(sorterId, outputBelts, sortingRoom);
+            sorter.setDaemon(true);
+            sorter.start();
+        }
 
         WarehouseBuffer wb1 = new WarehouseBuffer(Zone.OUT_1, 200, 10);
         WarehouseBuffer wb2 = new WarehouseBuffer(Zone.OUT_2, 200, 10);
         WarehouseBuffer wb3 = new WarehouseBuffer(Zone.OUT_3, 200, 10);
         WarehouseBuffer wb4 = new WarehouseBuffer(Zone.OUT_4, 200, 10);
-        WarehouseBuffer wb5 = new WarehouseBuffer(Zone.OUT_5_INVALID, 200, 10);
 
 // Output-Band -> WarehouseBuffer
         new BeltToWarehouseIntake(401, 1, outputBelts, wb1).start();
         new BeltToWarehouseIntake(402, 2, outputBelts, wb2).start();
         new BeltToWarehouseIntake(403, 3, outputBelts, wb3).start();
         new BeltToWarehouseIntake(404, 4, outputBelts, wb4).start();
-        new BeltToWarehouseIntake(405, 5, outputBelts, wb5).start();
 
 // WarehouseBuffer -> Dispatcher (Batch Versand)
         Dispatcher d1 = new Dispatcher(wb1, 2000);
         Dispatcher d2 = new Dispatcher(wb2, 2000);
         Dispatcher d3 = new Dispatcher(wb3, 2000);
         Dispatcher d4 = new Dispatcher(wb4, 2000);
-        Dispatcher d5 = new Dispatcher(wb5, 2000);
-        d1.setDaemon(true); d2.setDaemon(true); d3.setDaemon(true); d4.setDaemon(true); d5.setDaemon(true);
-        d1.start(); d2.start(); d3.start(); d4.start(); d5.start();
+        d1.setDaemon(true); d2.setDaemon(true); d3.setDaemon(true); d4.setDaemon(true);
+        d1.start(); d2.start(); d3.start(); d4.start();
 
 
         // --------- UI ---------

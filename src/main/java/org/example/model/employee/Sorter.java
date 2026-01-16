@@ -58,8 +58,6 @@ public class Sorter extends Employee {
 
     private int determineTargetBeltIndex(int zip) {
 
-        if (zip < 28195 || zip > 28779) return 5; // 5 = "INVALID/OUTSIDE" (zur Seite legen)
-
         if (zip >= 28717) return 1; // eher Bremen-Nord (viele 287xx)
         if (zip >= 28307) return 2; // eher Osten/SE (viele 283xx)
         if (zip >= 28237) return 3; // eher Westen (vieles 2823x/28239)
