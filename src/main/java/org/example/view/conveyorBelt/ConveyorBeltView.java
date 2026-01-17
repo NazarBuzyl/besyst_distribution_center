@@ -2,6 +2,7 @@ package org.example.view.conveyorBelt;
 
 import javafx.animation.AnimationTimer;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -84,8 +85,9 @@ public class ConveyorBeltView extends VBox
             this.packageNodes.put(newBelt, new ArrayList<>());
         });
 
-        removeBeltButton.paddingProperty().set(new Insets(10));
-        addBeltButton.paddingProperty().set(new Insets(10));
+        removeBeltButton.setPadding(new Insets(10));
+        addBeltButton.setPadding(new Insets(10));
+        this.setAlignment(Pos.TOP_CENTER);
 
         this.getChildren().add(addBeltButton);
         this.getChildren().add(removeBeltButton);
