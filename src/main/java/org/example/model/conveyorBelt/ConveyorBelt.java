@@ -121,4 +121,9 @@ public class ConveyorBelt
     public Semaphore getSemaWrite() {
         return semaWrite;
     }
+
+    public String getId()
+    {
+        return this.id;
+    }
 }

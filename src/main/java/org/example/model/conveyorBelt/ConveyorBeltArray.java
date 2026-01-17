@@ -17,10 +17,10 @@ public class ConveyorBeltArray
     // Fließbandreihen-Id
     private final String id;
 
-    // Fließbänder
+    // Fließbänder (synchronized access needed)
     private final LinkedList<ConveyorBelt> belts = new LinkedList<>();
 
-    // Fließbandtreiber
+    // Fließbandtreiber (synchronized access needed)
     private final LinkedList<ConveyorBeltDriver> drivers = new LinkedList<>();
 
     // beschreibbare Fließbänder
@@ -31,7 +31,7 @@ public class ConveyorBeltArray
 
 
     /**
-     * Erzeuge eine Instanz aus einer Fließbandreihen-Id und einer FLießbandanzahl.
+     * Erzeuge eine Instanz aus einer Fließbandreihen-Id und einer Fließbandanzahl.
      *
      * @param id Fließbandreihen-Id
      * @param arraySize Fließbandanzahl
@@ -97,13 +97,57 @@ public class ConveyorBeltArray
         belt.pickPackage(employeeId);
     }
 
+    /**
+     * Entferne das letzte Fließband.
+     *
+     * @return das entfernte Fließband
+     */
+    public synchronized ConveyorBelt removeBelt() {
+        if (belts.isEmpty()) {
+            return null;
+        }
+
+        ConveyorBelt removedBelt = belts.removeLast();
+        ConveyorBeltDriver removedDriver = drivers.removeLast();
+
+        // Entferne das Band aus den Queues
+        writableBelts.remove(removedBelt);
+        readableBelts.remove(removedBelt);
+
+        // Stoppe den Driver-Thread ordnungsgemäß
+        removedDriver.shutdown();
+
+        System.out.println("User removed belt " + removedBelt.getId() + ".");
+        return removedBelt;
+    }
+
+
+    /**
+     * Füge ein neues Fließband hinzu.
+     *
+     * @return das neue Fließband
+     */
+    public synchronized ConveyorBelt addBelt() {
+        ConveyorBelt newBelt = new ConveyorBelt(this.id + "." + (belts.size() + 1));
+        belts.add(newBelt);
+        writableBelts.add(newBelt);
+
+        // Erstelle und starte den neuen Driver
+        ConveyorBeltDriver newDriver = new ConveyorBeltDriver(newBelt, writableBelts, readableBelts);
+        newDriver.setDaemon(true);
+        newDriver.start();
+        drivers.add(newDriver);
+
+        System.out.println("User added belt " + newBelt.getId() + ".");
+        return newBelt;
+    }
 
     /**
      * Hole Fließbänder.
      *
      * @return Fließbänder
      */
-    public List<ConveyorBelt> getBelts() {
-        return Collections.unmodifiableList(belts);
+    public synchronized List<ConveyorBelt> getBelts() {
+        return Collections.unmodifiableList(new LinkedList<>(belts));
     }
 }
