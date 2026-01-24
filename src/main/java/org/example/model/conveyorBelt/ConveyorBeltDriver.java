@@ -33,6 +33,9 @@ public class ConveyorBeltDriver extends Thread
     // Ausgang gesperrt
     private boolean exitLocked = true;
 
+    // Thread läuft
+    private volatile boolean running = true;
+
     // Fließband
     private final ConveyorBelt target;
 
@@ -60,20 +63,48 @@ public class ConveyorBeltDriver extends Thread
 
 
     /**
+     * Stoppt den Driver-Thread ordnungsgemäß.
+     */
+    public void shutdown() {
+        running = false;
+        this.interrupt();
+    }
+
+
+    /**
      * run-Methode des Threads
      *
      * Aktualisiere das Fließband fortlaufend.
      */
     @Override
     public void run() {
-        while (!isInterrupted()) {
+        while (running && !isInterrupted()) {
             try {
                 updateConveyorBelt();
                 Thread.sleep(REFRESHING_RATE);
             } catch (InterruptedException e) {
-                interrupt();
+                // Prüfe, ob der Thread ordnungsgemäß heruntergefahren werden soll
+                if (!running) {
+                    break;
+                }
+                // Andernfalls setze den Interrupt-Status wieder
+                Thread.currentThread().interrupt();
+                break;
             }
         }
+
+        // Cleanup beim Beenden
+        cleanup();
+    }
+
+
+    /**
+     * Bereinigt Ressourcen beim Herunterfahren des Threads.
+     */
+    private void cleanup() {
+        // Entferne das Belt aus den Queues, falls noch vorhanden
+        writableQueue.remove(target);
+        readableQueue.remove(target);
     }
 
 

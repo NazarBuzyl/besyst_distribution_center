@@ -1,6 +1,9 @@
 package org.example.view.conveyorBelt;
 
 import javafx.animation.AnimationTimer;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -51,8 +54,43 @@ public class ConveyorBeltView extends VBox
         setSpacing(SPACING);
         setPrefWidth(BELT_WIDTH + 40);
 
+        initButtons();
         initBelts();
         startAnimation();
+    }
+
+
+    /**
+     * Initialisiere Buttons zum Hinzufügen und Entfernen von Fließbändern.
+     */
+    private void initButtons() {
+        Button removeBeltButton = new Button("Remove belt");
+        Button addBeltButton = new Button("Add belt");
+
+        removeBeltButton.setOnAction(event -> {
+            ConveyorBelt removedBelt = this.conveyorBeltArray.removeBelt();
+            if (removedBelt != null) {
+                Pane beltPane = this.beltPanes.get(removedBelt);
+                this.getChildren().remove(beltPane);
+                this.beltPanes.remove(removedBelt);
+                this.packageNodes.remove(removedBelt);
+            }
+        });
+
+        addBeltButton.setOnAction(event -> {
+            ConveyorBelt newBelt = this.conveyorBeltArray.addBelt();
+            Pane beltPane = createBeltPane();
+            this.getChildren().add(beltPane);
+            this.beltPanes.put(newBelt, beltPane);
+            this.packageNodes.put(newBelt, new ArrayList<>());
+        });
+
+        removeBeltButton.setPadding(new Insets(10));
+        addBeltButton.setPadding(new Insets(10));
+        this.setAlignment(Pos.TOP_CENTER);
+
+        this.getChildren().add(addBeltButton);
+        this.getChildren().add(removeBeltButton);
     }
 
 
@@ -109,8 +147,14 @@ public class ConveyorBeltView extends VBox
      */
     private void renderAllBelts()
     {
-        for (ConveyorBelt belt : beltPanes.keySet()) {
-            renderBelt(belt);
+        // Erstelle eine Kopie der Keys, um ConcurrentModificationException zu vermeiden
+        Set<ConveyorBelt> beltsToRender = new HashSet<>(beltPanes.keySet());
+
+        for (ConveyorBelt belt : beltsToRender) {
+            // Überprüfe, ob das Belt noch existiert (könnte zwischenzeitlich entfernt worden sein)
+            if (beltPanes.containsKey(belt)) {
+                renderBelt(belt);
+            }
         }
     }
 
@@ -124,6 +168,10 @@ public class ConveyorBeltView extends VBox
     {
         Pane pane = beltPanes.get(belt);
         List<Rectangle> nodes = packageNodes.get(belt);
+
+        if (pane == null || nodes == null) {
+            return;
+        }
 
         try {
             belt.getMutex().acquire();
