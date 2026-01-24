@@ -24,11 +24,13 @@ import java.util.List;
  * JavaFX App
  */
 public class App extends Application {
+    ReceivingStationController receivingStationController;
+    TransportsController transportsController;
 
     @Override
     public void start(Stage stage) {
-        ReceivingStationController receivingStationController = new ReceivingStationController();
-        TransportsController transportsController = new TransportsController(receivingStationController.getReceivingStation());
+        this.receivingStationController = new ReceivingStationController();
+        this.transportsController = new TransportsController(receivingStationController.getReceivingStation());
 
         // Initialize primary conveyor belts.
         ConveyorBeltArray conveyorBelts = new ConveyorBeltArray("1", 3);
@@ -53,6 +55,7 @@ public class App extends Application {
 
     @Override
     public void stop() {
+        transportsController.stop();
         System.out.println("JavaFX Application shutting down.");
     }
 

@@ -13,7 +13,7 @@ public class PackageStorage {
     protected final Semaphore mutex;
     protected final int storageCapacity;
 
-    protected int storage;  // todo - List<Package>
+    protected int storage;
 
     public PackageStorage(int storageCapacity) {
         this.semaWrite = new Semaphore(storageCapacity);
@@ -33,7 +33,7 @@ public class PackageStorage {
 
     /**
      *
-     * @param packages - Pakete, die ins Lager gebracht werden müssen todo - Paketänderung
+     * @param packages - Pakete, die ins Lager gebracht werden müssen
      * @throws InterruptedException
      */
     public void putPackages(int packages)  throws InterruptedException {
@@ -51,7 +51,7 @@ public class PackageStorage {
      *
      * @param numberOfPackages
      * @throws InterruptedException
-     * @return Gibt die abgeholte Pakete zurück  todo - Paketänderung
+     * @return Gibt die abgeholte Pakete zurück
      */
     public int takePackages(int numberOfPackages)  throws InterruptedException {
         semaRead.acquire(numberOfPackages);

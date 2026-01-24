@@ -12,15 +12,16 @@ public class TransportInput extends Thread {
     private static final int DEFAULT_DELIVERED_PACKAGES = 20; // unloading -> 5s
     private static final int DEFAULT_UNLOADING_FAKTOR = 250; // ms pro package
 
-    private static final String INTERRUPT_MESSAGE = " Transfer %d was interrupted, but continues execution.%n";
+    private static final String INTERRUPT_MESSAGE = " Transfer %d was interrupted, but finish last task.%n";
     private static final String UPLOADING_START_MESSAGE = " Transfer %d has started unloading %d packages.%n";
     private static final String UPLOADING_FINISH_MESSAGE = " Transfer %d has finished unloading %d packages.%n";
 
+    private volatile boolean run = true;
     private final int transportId;
     private final ReceivingStation target;
 
     private final int delivery_time_ms;
-    private final int delivered_packages; // todo - List<Package>
+    private final int delivered_packages;
     private final int unloading_time;
 
     // Variable, die Änderungen beim Entladen überwacht und das View-Element darüber benachrichtigt.
@@ -46,10 +47,11 @@ public class TransportInput extends Thread {
 
     @Override
     public void run() {
-        while (true) {
+        while (run) {
             try {
                 this.delivering();
             } catch (InterruptedException e) {
+                this.run = false;
                 System.err.printf(INTERRUPT_MESSAGE, this.transportId);
             }
         }

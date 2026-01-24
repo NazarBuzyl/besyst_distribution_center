@@ -94,7 +94,6 @@ public class TruckView extends Group {
         doorRotate = new Rotate(0, DOOR_WIDTH, HEIGHT, 0, Rotate.Z_AXIS);
 
         cargoDoor.getTransforms().add(doorRotate);
-        //getChildren().add(cargoDoor); todo - change like this
     }
 
     private void renderCargo() {

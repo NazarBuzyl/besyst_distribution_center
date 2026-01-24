@@ -53,4 +53,10 @@ public class TransportsController {
     public FloatProperty inputSpeedProperty() {
         return dataStateTransport.inputSpeedProperty();
     }
+
+    public void stop() {
+        transports.forEach((transportInput, transportObserver) -> {
+            transportInput.interrupt();
+        });
+    }
 }
