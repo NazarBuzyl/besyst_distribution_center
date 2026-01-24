@@ -1,9 +1,12 @@
 package org.example.model.conveyorBelt;
 
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.Semaphore;
 
+import org.example.model.Package;
 
 /**
  * Klasse für ein Fließband
@@ -16,10 +19,13 @@ public class ConveyorBelt
     private final String id;
 
     // Fließband-Kapazität
-    public static final int CAPACITY = 5;
+    public static final int CAPACITY = 6;
 
     // Paketpositionen
     private final Deque<Float> packagePositions = new LinkedList<>();
+
+    // Echte Paketobjekte (parallel zu packagePositions)
+    private final List<Package> packageList = new ArrayList<>(CAPACITY);
 
     // Erzeuger-Verbraucher-System
     private final Semaphore mutex = new Semaphore(1);
@@ -43,16 +49,19 @@ public class ConveyorBelt
      * Diese Methode kann den aufrufenden Thread blockieren.
      *
      * @param employeeId Mitarbeiter-Id
+     * @param p Paketobjekt
      * @throws InterruptedException Unterbrochen-Ausnahme
      */
-    public void dropPackage(int employeeId) throws InterruptedException {
+    public void dropPackage(int employeeId, Package p) throws InterruptedException {
         this.semaWrite.acquire();
         this.mutex.acquire();
         try {
+            p.setPosition(0F);
+            packageList.add(0, p);
             packagePositions.addFirst(0F);
             System.out.println(
                     "Employee " + employeeId +
-                            " has dropped a package on conveyor belt " + this.id + "."
+                            " has dropped a package (PLZ=" + p.getZipCode() + ") on conveyor belt " + this.id + "."
             );
         } finally {
             this.mutex.release();
@@ -66,17 +75,20 @@ public class ConveyorBelt
      * Diese Methode kann den aufrufenden Thread blockieren.
      *
      * @param employeeId Mitarbeiter-Id
+     * @return Paketobjekt
      * @throws InterruptedException Unterbrochen-Ausnahme
      */
-    public void pickPackage(int employeeId) throws InterruptedException {
+    public Package pickPackageAndReturn(int employeeId) throws InterruptedException {
         this.semaRead.acquire();
         this.mutex.acquire();
         try {
+            Package p = packageList.remove(packageList.size() - 1);
             packagePositions.removeLast();
             System.out.println(
                     "Employee " + employeeId +
-                            " has picked a package from conveyor belt " + this.id + "."
+                            " has picked a package (PLZ=" + p.getZipCode() + ") from conveyor belt " + this.id + "."
             );
+            return p;
         } finally {
             this.mutex.release();
         }
@@ -122,8 +134,11 @@ public class ConveyorBelt
         return semaWrite;
     }
 
-    public String getId()
-    {
-        return this.id;
+    public List<Package> getPackageList() {
+        return packageList;
+    }
+
+    public String getId() {
+        return id;
     }
 }
