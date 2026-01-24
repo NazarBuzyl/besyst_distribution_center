@@ -40,12 +40,12 @@ public class SectionTransport extends BorderPane {
         this.truckObservers = new LinkedList<>();
         this.controller = controller;
 
-        setMinWidth(350);
+        setMinWidth(400);
 
         setInputSpeedText(0.0);
         setTop(createInputPane());
         setCenter(trucksVBox);
-        trucksVBox.setPadding(new Insets(10));
+        trucksVBox.setPadding(new Insets(50));
         setAlignment(trucksVBox, Pos.CENTER);
 
         controller.inputSpeedProperty().addListener((obs, oldVal, newVal) -> {
