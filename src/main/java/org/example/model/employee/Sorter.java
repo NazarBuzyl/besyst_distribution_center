@@ -1,37 +1,66 @@
 package org.example.model.employee;
 
+import org.example.model.SortingRoom;
+import org.example.model.conveyorBelt.ConveyorBeltArray;
+import org.example.model.Package;
 
-import org.example.model.conveyorBelt.ConveyorBelt;
+//Anzahl der Employee soll sichtbar in der gui gemacht werden sortierung
 
-public class Sorter extends Employee
-{
-    public static final int SORTING_SPEED = 4000;
+public class Sorter extends Employee {
 
-    private final ConveyorBelt pickTarget;
+    public static final int SORTING_SPEED = 500;
 
-    // private final ConveyorBelt dropTarget;
+    private final ConveyorBeltArray beltArray;
+    private final SortingRoom sortingRoom;
 
-    public Sorter(int employeeId, ConveyorBelt pickTarget) // ConveyorBelt dropTarget
-    {
+    private volatile boolean running = true;
+
+    public Sorter(int employeeId, ConveyorBeltArray beltArray, SortingRoom sortingRoom) {
         super(employeeId);
-        this.pickTarget = pickTarget;
-        // this.dropTarget = dropTarget;
+        this.beltArray = beltArray;
+        this.sortingRoom = sortingRoom;
+    }
+
+    public void requestStop() {
+        running = false;
+        this.interrupt();
     }
 
     @Override
-    public void run()
-    {
-        try
-        {
-            while (true)
-            {
-                this.pickTarget.pickPackage(this.getEmployeeId());
-                Thread.sleep(SORTING_SPEED);
-                // this.dropTarget.dropPackage(this.EmployeeId());
+    public void run() {
+        try {
+            while (running && !Thread.currentThread().isInterrupted()) {
+
+                Package p = sortingRoom.takeForSorting();
+
+                sortingRoom.addBeingSorted(p);
+
+                try {
+                    System.out.println("Sorter " + getEmployeeId()
+                            + " is sorting package PLZ=" + p.getZipCode());
+
+                    Thread.sleep(SORTING_SPEED);
+
+                    int targetBandIndex = determineTargetBeltIndex(p.getZipCode());
+
+                    beltArray.dropPackageTo(targetBandIndex, getEmployeeId(), p);
+
+                } finally {
+                    sortingRoom.removeBeingSorted(p);
+                }
+
+                Thread.sleep(200);
             }
-        } catch (InterruptedException e)
-        {
-            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
+    }
+
+    private int determineTargetBeltIndex(int zip) {
+
+        if (zip >= 28717) return 1; // eher Bremen-Nord (viele 287xx)
+        if (zip >= 28307) return 2; // eher Osten/SE (viele 283xx)
+        if (zip >= 28237) return 3; // eher Westen (vieles 2823x/28239)
+        return 4;                   // Rest = Mitte/Süd (z.B. 281xx–2822x)
     }
 }

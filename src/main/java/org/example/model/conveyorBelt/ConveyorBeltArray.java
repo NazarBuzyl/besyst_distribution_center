@@ -1,5 +1,7 @@
 package org.example.model.conveyorBelt;
 
+import org.example.model.Package;
+
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -24,19 +26,23 @@ public class ConveyorBeltArray
     private final LinkedList<ConveyorBeltDriver> drivers = new LinkedList<>();
 
     // beschreibbare Fließbänder
-    private final BlockingQueue<ConveyorBelt> writableBelts = new LinkedBlockingQueue<>();
+    private final BlockingQueue<ConveyorBelt> writableBelts =
+            new LinkedBlockingQueue<>();
 
     // lesbare Fließbänder
-    private final BlockingQueue<ConveyorBelt> readableBelts = new LinkedBlockingQueue<>();
+    private final BlockingQueue<ConveyorBelt> readableBelts =
+            new LinkedBlockingQueue<>();
 
 
     /**
-     * Erzeuge eine Instanz aus einer Fließbandreihen-Id und einer FLießbandanzahl.
+     * Erzeuge eine Instanz aus einer Fließbandreihen-Id
+     * und einer Fließbandanzahl.
      *
      * @param id Fließbandreihen-Id
      * @param arraySize Fließbandanzahl
      */
-    public ConveyorBeltArray(String id, int arraySize) {
+    public ConveyorBeltArray(String id, int arraySize)
+    {
         this.id = id;
         initBelts(arraySize);
         initDrivers();
@@ -48,9 +54,12 @@ public class ConveyorBeltArray
      *
      * @param arraySize Fließbandanzahl
      */
-    private void initBelts(int arraySize) {
-        for (int i = 0; i < arraySize; i++) {
-            ConveyorBelt belt = new ConveyorBelt(this.id + "." + (i + 1));
+    private void initBelts(int arraySize)
+    {
+        for (int i = 0; i < arraySize; i++)
+        {
+            ConveyorBelt belt =
+                    new ConveyorBelt(this.id + "." + (i + 1));
             belts.add(belt);
             writableBelts.add(belt);
         }
@@ -60,9 +69,16 @@ public class ConveyorBeltArray
     /**
      * Initialisiere Fließbandtreiber.
      */
-    private void initDrivers() {
-        for (ConveyorBelt belt : belts) {
-            ConveyorBeltDriver driver = new ConveyorBeltDriver(belt, writableBelts, readableBelts);
+    private void initDrivers()
+    {
+        for (ConveyorBelt belt : belts)
+        {
+            ConveyorBeltDriver driver =
+                    new ConveyorBeltDriver(
+                            belt,
+                            writableBelts,
+                            readableBelts);
+
             driver.setDaemon(true);
             driver.start();
             drivers.add(driver);
@@ -71,31 +87,70 @@ public class ConveyorBeltArray
 
 
     /**
-     * Lege ein Paket ab.
+     * Lege ein Paket auf ein beliebiges freies Band.
      *
-     * Diese Methode kann den aufrufenden Thread unterbrechen.
+     * Diese Methode kann blockieren.
      *
      * @param employeeId Mitarbeiter-Id
-     * @throws InterruptedException Unterbrochen-Ausnahme
      */
-    public void dropPackage(int employeeId) throws InterruptedException {
+    public void dropPackage(int employeeId, Package p)
+            throws InterruptedException
+    {
         ConveyorBelt belt = writableBelts.take();
-        belt.dropPackage(employeeId);
+        belt.dropPackage(employeeId, p);
     }
 
 
     /**
-     * Hole ein Paket ab.
+     * Lege ein Paket gezielt auf ein bestimmtes Band.
      *
-     * Diese Methode kann den aufrufenden Thread unterbrechen.
+     * @param beltIndex 1-basierter Index
+     * @param employeeId Mitarbeiter-Id
+     */
+    public void dropPackageTo(int beltIndex, int employeeId, Package p) throws InterruptedException {
+        if (beltIndex < 1 || beltIndex > belts.size()) {
+            throw new IllegalArgumentException("Invalid belt index: " + beltIndex);
+        }
+        ConveyorBelt belt = belts.get(beltIndex - 1);
+        belt.dropPackage(employeeId, p);
+    }
+
+
+    /**
+     * Hole ein Paket von einem Band,
+     * dessen Ende erreicht wurde.
      *
      * @param employeeId Mitarbeiter-Id
-     * @throws InterruptedException Unterbrochen-Ausnahme
      */
-    public void pickPackage(int employeeId) throws InterruptedException {
+    public Package pickPackage(int employeeId)
+            throws InterruptedException
+    {
         ConveyorBelt belt = readableBelts.take();
-        belt.pickPackage(employeeId);
+        return belt.pickPackageAndReturn(employeeId);
     }
+
+
+
+    /**
+     * Hole ein Paket gezielt von einem Band.
+     *
+     * @param beltIndex 1-basierter Index
+     * @param employeeId Mitarbeiter-Id
+     */
+    public Package pickPackageFrom(int beltIndex,
+                                   int employeeId)
+            throws InterruptedException
+    {
+        if (beltIndex < 1 || beltIndex > belts.size())
+        {
+            throw new IllegalArgumentException(
+                    "Invalid belt index: " + beltIndex);
+        }
+
+        ConveyorBelt belt = belts.get(beltIndex - 1);
+        return belt.pickPackageAndReturn(employeeId);
+    }
+
 
 
     /**
@@ -103,7 +158,9 @@ public class ConveyorBeltArray
      *
      * @return Fließbänder
      */
-    public List<ConveyorBelt> getBelts() {
+    public List<ConveyorBelt> getBelts()
+    {
         return Collections.unmodifiableList(belts);
     }
+
 }

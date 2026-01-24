@@ -129,8 +129,6 @@ public class TruckView extends Group {
         cabin.setStroke(Color.BLACK);
         cabin.setX(DOOR_WIDTH + CARGO_WIDTH);
         cabin.setY(HEIGHT - CABIN_SIZE);
-
-
     }
 
     private void renderWheel() {
