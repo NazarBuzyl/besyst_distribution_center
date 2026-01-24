@@ -1,5 +1,9 @@
 package org.example.model.stations;
 
+import org.example.model.Package;
+
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -14,6 +18,8 @@ public class PackageStorage {
     protected final int storageCapacity;
 
     protected int storage;
+    // Queue für echte Package-Objekte, die vom Dropper auf die Eingangsbänder gelegt werden
+    protected final List<Package> packageList;
 
     public PackageStorage(int storageCapacity) {
         this.semaWrite = new Semaphore(storageCapacity);
@@ -21,6 +27,7 @@ public class PackageStorage {
         this.mutex = new Semaphore(1);
         this.storageCapacity = storageCapacity;
         this.storage = 0;
+        this.packageList = new LinkedList<>();
     }
 
     public PackageStorage() {
@@ -29,6 +36,7 @@ public class PackageStorage {
         this.mutex = new Semaphore(1);
         this.storageCapacity = DEFAULT_MAX_STORAGE;
         this.storage = 0;
+        this.packageList = new LinkedList<>();
     }
 
     /**
@@ -36,32 +44,35 @@ public class PackageStorage {
      * @param packages - Pakete, die ins Lager gebracht werden müssen
      * @throws InterruptedException
      */
-    public void putPackages(int packages)  throws InterruptedException {
-        semaWrite.acquire(packages);
+    public void putPackages(List<Package> packages)  throws InterruptedException {
+        int packagesCount = packages.size();
+        semaWrite.acquire(packagesCount);
 
         mutex.acquire();
-        this.storage += packages;
+        this.packageList.addAll(packages);
+        this.storage += packagesCount;
         mutex.release();
 
-        semaRead.release(packages);
+        semaRead.release(packagesCount);
     };
 
     /**
      * Methode zur synchronisierten Entnahme von Ware aus dem Lager
      *
-     * @param numberOfPackages
      * @throws InterruptedException
      * @return Gibt die abgeholte Pakete zurück
      */
-    public int takePackages(int numberOfPackages)  throws InterruptedException {
-        semaRead.acquire(numberOfPackages);
+    public Package takePackage()  throws InterruptedException {
+        semaRead.acquire();
 
         mutex.acquire();
-        storage-=numberOfPackages;
+        storage-=1;
+        Package p = packageList.get(0);
+        packageList.remove(0);
         mutex.release();
 
-        semaWrite.release(numberOfPackages);
-        return numberOfPackages;
+        semaWrite.release(1);
+        return p;
     };
 
     public int getStorageCapacity() {

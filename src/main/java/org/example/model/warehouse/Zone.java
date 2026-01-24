@@ -1,6 +1,8 @@
 
 package org.example.model.warehouse;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 public class Zone {
 
     // ---------- NEU: Name für Ausgabe/Dispatcher ----------
@@ -23,7 +25,7 @@ public class Zone {
     public static final Zone OUT_5_INVALID = new Zone("OUT_BAND_5 (INVALID)");
 
     // ---------- ALT (bleibt): PLZ Generator ----------
-    public static final int[] VALID_PLZ = {
+    public static volatile int[] VALID_PLZ = {
             28195, 28197, 28199,
             28201, 28203, 28205, 28207, 28209,
             28211, 28213, 28215,
@@ -34,8 +36,11 @@ public class Zone {
             28717, 28719, 28755, 28757, 28759, 28777, 28779
     };
 
+    /**
+     * Generiert eine PLZ (zufällig). Die Zuordnung zu Bändern/Zonen erfolgt später durch den Sorter.
+     */
     public static int randomPlz() {
-        int index = (int) (Math.random() * VALID_PLZ.length);
+        int index = (ThreadLocalRandom.current().nextInt(0,33));
         return VALID_PLZ[index];
     }
 }

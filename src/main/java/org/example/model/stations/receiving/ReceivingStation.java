@@ -4,6 +4,7 @@ import org.example.model.stations.PackageStorage;
 import org.example.model.transport.TransportInput;
 
 import java.time.LocalTime;
+import java.util.LinkedList;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
@@ -22,21 +23,16 @@ public class ReceivingStation extends PackageStorage {
 
     private final ReceivingStationObserver receivingStationObserver;
 
-    // Queue für echte Package-Objekte, die vom Dropper auf die Eingangsbänder gelegt werden
-    private final BlockingQueue<Package> packageQueue;
-
     public ReceivingStation(ReceivingStationObserver observer) {
         super();
         this.receivingStationObserver = observer;
         this.input = new Semaphore(DEFAULT_MAX_PARKING_PLACES);
-        this.packageQueue = new LinkedBlockingQueue<>(this.getStorageCapacity());
     }
 
     public ReceivingStation(ReceivingStationObserver observer, int maxStorage) {
         super(maxStorage);
         this.receivingStationObserver = observer;
         this.input = new Semaphore(DEFAULT_MAX_PARKING_PLACES);
-        this.packageQueue = new LinkedBlockingQueue<>(this.getStorageCapacity());
     }
 
     /**
@@ -66,23 +62,19 @@ public class ReceivingStation extends PackageStorage {
 
         receivingStationObserver.startReceiving(); // Observer
         System.out.printf(LocalTime.now().withNano(0)+ACCEPTATION_MESSAGE, transport.getTransportId());
-        int packages = transport.unloading(); // Aufruf des Entladeprozesses der Ware (jedes Fahrzeug hat unterschiedliche Entladezeiten)
+        LinkedList<Package> packages = transport.unloading(); // Aufruf des Entladeprozesses der Ware (jedes Fahrzeug hat unterschiedliche Entladezeiten)
 
-        // Erzeuge echte Package-Objekte mit PLZ und füge sie in die packageQueue ein
-        for (int i = 0; i < packages; i++) {
-            Package p = new Package(generateZipCode());
-            this.packageQueue.put(p);
-        }
-
+        int packagesCount = packages.size();
         mutex.acquire();
-        this.storage += packages;
+        this.storage += packagesCount;
+        this.packageList.addAll(packages);
         System.out.printf(LocalTime.now().withNano(0) + CURRENT_STATE_MESSAGE, this.storage);
-        receivingStationObserver.addToTotalPackage(packages);
+        receivingStationObserver.addToTotalPackage(packagesCount);
         receivingStationObserver.changePackages(this.storage);
         mutex.release();
         receivingStationObserver.finishReceiving(); // Observer
 
-        semaRead.release(packages);
+        semaRead.release(packagesCount);
     }
 
     /**
@@ -94,21 +86,11 @@ public class ReceivingStation extends PackageStorage {
      */
     public Package takePackageForDropper() throws InterruptedException {
         // Warte auf ein reales Package-Objekt
-        Package p = this.packageQueue.take();
-
-        // Aktualisiere die internen Storage-Zähler: nehme 1 Paket aus dem Storage
-        super.takePackages(1);
+        Package p = super.takePackage();
 
         // Observer updaten (takePackages hat storage bereits reduziert)
         receivingStationObserver.changePackages(this.storage);
 
         return p;
-    }
-
-    /**
-     * Generiert eine PLZ (zufällig). Die Zuordnung zu Bändern/Zonen erfolgt später durch den Sorter.
-     */
-    private int generateZipCode() {
-        return Zone.randomPlz();
     }
 }

@@ -1,8 +1,13 @@
 package org.example.model.transport;
 
+import org.example.model.Package;
 import org.example.model.stations.receiving.ReceivingStation;
+import org.example.model.warehouse.Zone;
 
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @author Nazar Buzyl
@@ -23,6 +28,7 @@ public class TransportInput extends Thread {
     private final int delivery_time_ms;
     private final int delivered_packages;
     private final int unloading_time;
+    private LinkedList<Package> packages;
 
     // Variable, die Änderungen beim Entladen überwacht und das View-Element darüber benachrichtigt.
     private final TransportObserver transportObserver ;
@@ -64,6 +70,7 @@ public class TransportInput extends Thread {
      */
     private void delivering() throws InterruptedException {
             this.transportObserver.drive();
+            this.packages = this.createNewPackages();
             Thread.sleep(this.delivery_time_ms);
             this.transportObserver.park();
             target.takeParkingPlace(this);
@@ -77,13 +84,23 @@ public class TransportInput extends Thread {
      * @return Gibt die entladenen Pakete zurück
      * @throws InterruptedException
      */
-    public int unloading() throws InterruptedException {
+    public LinkedList<Package> unloading() throws InterruptedException {
             this.transportObserver.startUnloading();
             System.out.printf(LocalTime.now().withNano(0) + UPLOADING_START_MESSAGE, this.transportId, this.delivered_packages);
             Thread.sleep(this.unloading_time);
             System.out.printf(LocalTime.now().withNano(0) + UPLOADING_FINISH_MESSAGE, this.transportId, this.delivered_packages);
             this.transportObserver.finishUnloading();
-            return this.delivered_packages;
+            return this.packages;
+    }
+
+    // Erzeuge echte Package-Objekte mit PLZ und füge sie in die packageQueue ein
+    private LinkedList<Package> createNewPackages() {
+        LinkedList<Package> newPackages = new LinkedList<>();
+        for (int i = 0; i < delivered_packages; i++) {
+            Package p = new Package(Zone.randomPlz());
+            newPackages.add(p);
+        }
+        return newPackages;
     }
 
     public int getDeliveredPackages() {
