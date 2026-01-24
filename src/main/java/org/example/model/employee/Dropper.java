@@ -2,6 +2,7 @@ package org.example.model.employee;
 
 import org.example.model.conveyorBelt.ConveyorBeltArray;
 import org.example.model.stations.receiving.ReceivingStation;
+import org.example.model.statistics.FlowTimeStatistics;
 import org.example.model.Package;
 
 public class Dropper extends Employee
@@ -10,12 +11,16 @@ public class Dropper extends Employee
 
     private final ConveyorBeltArray target;
     private final ReceivingStation receivingStation;
+    private final FlowTimeStatistics flowStats;
 
-    public Dropper(int employeeId, ConveyorBeltArray target, ReceivingStation receivingStation)
-    {
+    public Dropper(int employeeId,
+                   ConveyorBeltArray target,
+                   ReceivingStation receivingStation,
+                   FlowTimeStatistics flowStats) {
         super(employeeId);
         this.target = target;
         this.receivingStation = receivingStation;
+        this.flowStats = flowStats;
     }
 
     @Override
@@ -23,7 +28,7 @@ public class Dropper extends Employee
     {
         try
         {
-            while (true)
+            while (!isInterrupted())
             {
                 // hole ein Package aus der ReceivingStation (blockiert bis eines verfügbar ist)
                 Package p = this.receivingStation.takePackageForDropper();
@@ -31,6 +36,7 @@ public class Dropper extends Employee
                 // legt auf ein freies Band (blockiert, wenn alle Eingänge voll sind)
                 this.target.dropPackage(this.getEmployeeId(), p);
 
+                if(flowStats != null) flowStats.markStart(p);
                 Thread.sleep(DROP_SPEED);
             }
         }

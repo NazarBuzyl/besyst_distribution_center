@@ -3,6 +3,7 @@ package org.example.model.warehouse;
 import org.example.model.Package;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -10,11 +11,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class WarehouseBuffer {
 
     private final Zone zone;
+    private final int capacity;
     private final int dispatchThreshold;
     private final BlockingQueue<Package> storage;
 
     public WarehouseBuffer(Zone zone, int capacity, int dispatchThreshold) {
         this.zone = zone;
+        this.capacity = capacity;
         this.dispatchThreshold = dispatchThreshold;
         this.storage = new LinkedBlockingQueue<>(capacity);
     }
@@ -23,24 +26,37 @@ public class WarehouseBuffer {
         return zone;
     }
 
+    public int getCapacity() {
+        return capacity;
+    }
+
     public int getDispatchThreshold() {
         return dispatchThreshold;
     }
 
     public void store(Package p) throws InterruptedException {
-        storage.put(p); // блокується, якщо склад переповнений
-    }
-
-    /** Чекає, поки на складі буде >= N, і повертає рівно N пакетів */
-    public List<Package> takeBatch() throws InterruptedException {
-        List<Package> batch = new ArrayList<>(dispatchThreshold);
-        for (int i = 0; i < dispatchThreshold; i++) {
-            batch.add(storage.take());
-        }
-        return batch;
+        storage.put(p);
     }
 
     public int size() {
         return storage.size();
+    }
+
+    public List<Package> takeBatchIfAvailable() throws InterruptedException {
+        if (storage.size() < dispatchThreshold) {
+            return Collections.emptyList();
+        }
+
+        List<Package> batch = new ArrayList<>(dispatchThreshold);
+        storage.drainTo(batch, dispatchThreshold);
+
+        if (batch.size() < dispatchThreshold) {
+            for (Package p : batch) {
+                storage.put(p);
+            }
+            return Collections.emptyList();
+        }
+
+        return batch;
     }
 }
