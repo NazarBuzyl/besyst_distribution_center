@@ -64,16 +64,26 @@ public class App extends Application {
 
         SortingStationView sortingStationView = new SortingStationView(sortingRoom, sortingStationObserver, manager);
 
-        // --------- 1) Eingangsbänder (3 Stück) ---------
+        // --------- Eingangsbänder (3 Stück) ---------
         ConveyorBeltArray inputBelts = new ConveyorBeltArray("IN", 3);
         ConveyorBeltView inputBeltsView = new ConveyorBeltView(inputBelts);
 
 //         Dropper erzeugt Pakete + legt sie auf die Eingangsbänder
-        Dropper dropper = new Dropper(1, inputBelts, receivingStationController.getReceivingStation(), null);
+        FlowTimeStatistics flowStats = new FlowTimeStatistics();
+        WarehouseArrivalCounters arrivalCounters = new WarehouseArrivalCounters();
+
+// Dropper erzeugt Pakete + legt sie auf die Eingangsbänder
+        Dropper dropper = new Dropper(
+                1,
+                inputBelts,
+                receivingStationController.getReceivingStation(),
+                flowStats
+        );
         dropper.setDaemon(true);
         dropper.start();
 
-        // --------- 2) Intake: Ende der Eingangsbänder -> SortingRoom ---------
+
+        // --------- Intake: Ende der Eingangsbänder -> SortingRoom ---------
         BeltToSortingIntake intake1 = new BeltToSortingIntake(101, 1, inputBelts, sortingRoom);
         BeltToSortingIntake intake2 = new BeltToSortingIntake(102, 2, inputBelts, sortingRoom);
         BeltToSortingIntake intake3 = new BeltToSortingIntake(103, 3, inputBelts, sortingRoom);
@@ -86,12 +96,8 @@ public class App extends Application {
         intake2.start();
         intake3.start();
 
-        // --------- 3) Ausgangsbänder (für Sortierergebnisse) ---------
 
-        FlowTimeStatistics flowStats = new FlowTimeStatistics();
-        WarehouseArrivalCounters arrivalCounters = new WarehouseArrivalCounters();
-
-        // --------- 4) Sorter: SortingRoom -> outputBelts ---------
+        // --------- Sorter: SortingRoom -> outputBelts ---------
         int SORTER_COUNT = 0;
         for (int i = 0; i < SORTER_COUNT; i++) {
             int sorterId = 201 + i;

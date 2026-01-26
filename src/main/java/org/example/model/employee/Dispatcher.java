@@ -1,6 +1,9 @@
 package org.example.model.employee;
 
+import org.example.model.Package;
 import org.example.model.warehouse.WarehouseBuffer;
+
+import java.util.List;
 
 public class Dispatcher extends Thread {
 
@@ -19,10 +22,21 @@ public class Dispatcher extends Thread {
             while (!isInterrupted()) {
                 Thread.sleep(intervalMs);
 
-                System.out.printf(
-                        "Dispatcher status: %s (warehouse keeps packages, nothing removed).%n",
-                        warehouseBuffer.getZone()
-                );
+                // Take a batch only when enough packages are available.
+                List<Package> batch = warehouseBuffer.takeBatchIfAvailable();
+
+                if (!batch.isEmpty()) {
+                    int n = batch.size();
+                    String paketText = (n == 1) ? "1 Paket" : (n + " Pakete");
+
+                    System.out.println(
+                            "Der Dispatcher hat "
+                                    + paketText
+                                    + " entnommen und im Lagerbereich "
+                                    + warehouseBuffer.getZone()
+                                    + " abgelegt."
+                    );
+                }
             }
         } catch (InterruptedException e) {
             interrupt();
