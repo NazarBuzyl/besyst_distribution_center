@@ -22,7 +22,6 @@ public class Zone {
     public static final Zone OUT_2 = new Zone("OUT_BAND_2 (28307+)");
     public static final Zone OUT_3 = new Zone("OUT_BAND_3 (28237+)");
     public static final Zone OUT_4 = new Zone("OUT_BAND_4 (Rest)");
-    public static final Zone OUT_5_INVALID = new Zone("OUT_BAND_5 (INVALID)");
 
     // ---------- ALT (bleibt): PLZ Generator ----------
     public static volatile int[] VALID_PLZ = {

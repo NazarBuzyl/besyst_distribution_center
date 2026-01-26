@@ -57,7 +57,7 @@ public class App extends Application {
         SortingStationObserver sortingStationObserver = new SortingStationObserver();
         SortingRoom sortingRoom = new SortingRoom(sortingStationObserver);
 
-        ConveyorBeltArray outputBelts = new ConveyorBeltArray("OUT", 5);
+        ConveyorBeltArray outputBelts = new ConveyorBeltArray("OUT", 4);
         ConveyorBeltView outputBeltsView = new ConveyorBeltView(outputBelts);
 
         SortingManager manager = new SortingManager(sortingRoom, outputBelts);
@@ -104,14 +104,12 @@ public class App extends Application {
                 WarehouseBuffer wb2 = new WarehouseBuffer(Zone.OUT_2, Integer.MAX_VALUE, 10);
                 WarehouseBuffer wb3 = new WarehouseBuffer(Zone.OUT_3, Integer.MAX_VALUE, 10);
                 WarehouseBuffer wb4 = new WarehouseBuffer(Zone.OUT_4, Integer.MAX_VALUE, 10);
-                WarehouseBuffer wb5 = new WarehouseBuffer(Zone.OUT_5_INVALID, Integer.MAX_VALUE, 10);
 
 // Output-Band -> WarehouseBuffer
         new BeltToWarehouseIntake(401, 1, outputBelts, wb1, flowStats, arrivalCounters).start();
         new BeltToWarehouseIntake(402, 2, outputBelts, wb2, flowStats, arrivalCounters).start();
         new BeltToWarehouseIntake(403, 3, outputBelts, wb3, flowStats, arrivalCounters).start();
         new BeltToWarehouseIntake(404, 4, outputBelts, wb4, flowStats, arrivalCounters).start();
-        new BeltToWarehouseIntake(405, 5, outputBelts, wb5, flowStats, arrivalCounters).start();
 
         // WarehouseBuffer -> Dispatcher (Batch Versand)
         Dispatcher d1 = new Dispatcher(wb1, 2000);
@@ -205,18 +203,16 @@ public class App extends Application {
         Label b2 = new Label();
         Label b3 = new Label();
         Label b4 = new Label();
-        Label b5 = new Label();
 
         b1.setStyle("-fx-font-size: 12px;");
         b2.setStyle("-fx-font-size: 12px;");
         b3.setStyle("-fx-font-size: 12px;");
         b4.setStyle("-fx-font-size: 12px;");
-        b5.setStyle("-fx-font-size: 12px;");
 
         arrivalsCard.getChildren().addAll(
                 arrivalsTitle,
                 totalArrived,
-                b1, b2, b3, b4, b5
+                b1, b2, b3, b4
         );
 
         box.getChildren().addAll(
@@ -256,7 +252,6 @@ public class App extends Application {
                 b2.setText("OUT.2 arrived: " + arrivalCounters.getArrivedForBelt(2));
                 b3.setText("OUT.3 arrived: " + arrivalCounters.getArrivedForBelt(3));
                 b4.setText("OUT.4 arrived: " + arrivalCounters.getArrivedForBelt(4));
-                b5.setText("OUT.5 arrived: " + arrivalCounters.getArrivedForBelt(5));
 
                 last = now;
             }
