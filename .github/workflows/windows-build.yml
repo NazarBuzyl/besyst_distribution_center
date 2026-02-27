@@ -1,32 +1,38 @@
-name: Windows JavaFX Build
+name: Windows Build
 
 on:
   push:
     branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
-  build-windows:
+  build:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Repository auschecken
+        uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: JDK 17 einrichten
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
           java-version: '17'
-          cache: 'maven'
+          distribution: 'temurin'
+          cache: maven
 
-      - name: Build JAR
-        run: mvn clean package
+      - name: Maven Build
+        run: mvn clean package --no-transfer-progress
 
-      - name: Create Windows EXE
-        run: jpackage --input target --name BESYST_Distribution_Center --main-jar besyst_distribution_center-1.0.0.jar --main-class org.example.App --type exe
+      - name: jpackage ausführen (EXE erstellen)
+        run: mvn javafx:jlink javafx:jpackage --no-transfer-progress
 
-      - name: Upload EXE
+      - name: Build-Artefakte hochladen
         uses: actions/upload-artifact@v4
         with:
-          name: BESYST-Windows-EXE
-          path: "*.exe"
+          name: BESYST-Windows-Installer
+          path: |
+            target/BESYST*.exe
+            target/BESYST_Distribution_Center*.exe
+          retention-days: 30
