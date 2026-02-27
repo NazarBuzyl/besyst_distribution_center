@@ -25,6 +25,12 @@ jobs:
       - name: Maven Build & jlink
         run: mvn clean package javafx:jlink --no-transfer-progress
 
+      - name: WiX 3 installieren
+        run: |
+          choco install wixtoolset --version=3.14.1 -y
+          echo "C:\Program Files (x86)\WiX Toolset v3.14\bin" | Out-File -Append -FilePath $env:GITHUB_PATH
+        shell: powershell
+
       - name: jpackage ausführen (EXE erstellen)
         run: |
           jpackage `
