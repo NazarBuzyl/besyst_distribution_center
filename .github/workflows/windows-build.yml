@@ -10,8 +10,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -20,17 +19,20 @@ jobs:
           java-version: '17'
           cache: 'maven'
 
-      - name: Build with Maven
+      - name: Build JAR
         run: mvn clean package
 
-      - name: Create Runtime Image (jlink)
-        run: mvn javafx:jlink
-
       - name: Create Windows EXE
-        run: mvn javafx:jpackage
+        run: |
+          jpackage ^
+            --input target ^
+            --name BESYST_Distribution_Center ^
+            --main-jar besyst_distribution_center-1.0.0.jar ^
+            --main-class org.example.App ^
+            --type exe
 
-      - name: Upload EXE Artifact
+      - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
           name: BESYST-Windows-EXE
-          path: target/*.exe
+          path: "*.exe"
