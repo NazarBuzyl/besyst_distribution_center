@@ -27,24 +27,10 @@ jobs:
 
       - name: WiX 3 in PATH eintragen
         run: |
-          $wixPath = Get-ChildItem "C:\Program Files (x86)\WiX Toolset*" | Sort-Object Name -Descending | Select-Object -First 1
-          echo "$($wixPath.FullName)\bin" | Out-File -Append -FilePath $env:GITHUB_PATH
-          Write-Host "WiX gefunden: $($wixPath.FullName)"
-        shell: powershell
-
-      - name: WiX Debug
-        run: |
-          Write-Host "=== WiX Verzeichnisse ==="
-          Get-ChildItem "C:\Program Files (x86)\WiX Toolset*"
-          
-          Write-Host "=== light.exe im PATH ==="
-          where.exe light.exe
-          
-          Write-Host "=== WixUtilExtension ==="
-          Get-ChildItem "C:\Program Files (x86)\WiX Toolset*" -Recurse -Filter "WixUtilExtension.dll" -ErrorAction SilentlyContinue
-          
-          Write-Host "=== PATH ==="
-          $env:PATH -split ";"
+          $wixPath = (Get-ChildItem "C:\Program Files (x86)\WiX Toolset*" | Sort-Object Name -Descending | Select-Object -First 1).FullName
+          echo "$wixPath\bin" | Out-File -Append -FilePath $env:GITHUB_PATH
+          echo "WIX=$wixPath\" | Out-File -Append -FilePath $env:GITHUB_ENV
+          Write-Host "WiX gefunden: $wixPath"
         shell: powershell
 
       - name: jpackage ausführen (EXE erstellen)
