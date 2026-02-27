@@ -37,36 +37,21 @@
                 </configuration>
             </plugin>
 
-            <!-- JavaFX Plugin -->
+            <!-- JavaFX Plugin (nur jlink) -->
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
                     <mainClass>org.example.App</mainClass>
-
                     <launcher>BESYST</launcher>
-
                     <jlinkZipName>BESYST</jlinkZipName>
                     <jlinkImageName>BESYST</jlinkImageName>
-
                     <stripDebug>true</stripDebug>
                     <noHeaderFiles>true</noHeaderFiles>
                     <noManPages>true</noManPages>
-
-                    <jpackage>
-                        <name>BESYST_Distribution_Center</name>
-                        <appVersion>1.0.0</appVersion>
-                        <vendor>Hochschule</vendor>
-                        <type>exe</type>
-                        <winMenu>true</winMenu>
-                        <winShortcut>true</winShortcut>
-                    </jpackage>
-
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
-
 </project>
