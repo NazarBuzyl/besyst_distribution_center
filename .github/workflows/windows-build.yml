@@ -32,7 +32,6 @@ jobs:
             --name "BESYST_Distribution_Center" `
             --app-version "1.0.0" `
             --vendor "Hochschule" `
-            --module-path "target/BESYST/lib" `
             --app-image "target/BESYST" `
             --win-menu `
             --win-shortcut `
