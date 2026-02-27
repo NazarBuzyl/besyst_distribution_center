@@ -58,7 +58,7 @@ public class App extends Application {
         SortingRoom sortingRoom = new SortingRoom(sortingStationObserver);
 
         ConveyorBeltArray outputBelts = new ConveyorBeltArray("OUT", 4);
-        ConveyorBeltView outputBeltsView = new ConveyorBeltView(outputBelts);
+        ConveyorBeltView outputBeltsView = new ConveyorBeltView(outputBelts, false);
 
         SortingManager manager = new SortingManager(sortingRoom, outputBelts);
 
@@ -66,7 +66,7 @@ public class App extends Application {
 
         // --------- Eingangsbänder (3 Stück) ---------
         ConveyorBeltArray inputBelts = new ConveyorBeltArray("IN", 3);
-        ConveyorBeltView inputBeltsView = new ConveyorBeltView(inputBelts);
+        ConveyorBeltView inputBeltsView = new ConveyorBeltView(inputBelts, false);
 
 //         Dropper erzeugt Pakete + legt sie auf die Eingangsbänder
         FlowTimeStatistics flowStats = new FlowTimeStatistics();

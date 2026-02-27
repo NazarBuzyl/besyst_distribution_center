@@ -36,6 +36,9 @@ public class ConveyorBeltView extends VBox
     // Fließbandreihe
     private final ConveyorBeltArray conveyorBeltArray;
 
+    // Dynamische Fließbandanzahl
+    private final boolean isDynamic;
+
     // Zu jedem Band: seine Paket-Rechtecke
     private final Map<ConveyorBelt, List<Rectangle>> packageNodes = new HashMap<>();
 
@@ -48,13 +51,18 @@ public class ConveyorBeltView extends VBox
      *
      * @param conveyorBeltArray Fließbandreihe
      */
-    public ConveyorBeltView(ConveyorBeltArray conveyorBeltArray) {
+    public ConveyorBeltView(ConveyorBeltArray conveyorBeltArray, boolean isDynamic) {
         this.conveyorBeltArray = conveyorBeltArray;
+        this.isDynamic = isDynamic;
 
         setSpacing(SPACING);
         setPrefWidth(BELT_WIDTH + 40);
 
-        initButtons();
+        if (this.isDynamic)
+        {
+            initButtons();
+        }
+
         initBelts();
         startAnimation();
     }
