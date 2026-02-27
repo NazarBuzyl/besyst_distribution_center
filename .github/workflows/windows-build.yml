@@ -22,17 +22,26 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Maven Build
-        run: mvn clean package --no-transfer-progress
+      - name: Maven Build & jlink
+        run: mvn clean package javafx:jlink --no-transfer-progress
 
       - name: jpackage ausführen (EXE erstellen)
-        run: mvn javafx:jlink javafx:jpackage --no-transfer-progress
+        run: |
+          jpackage `
+            --type exe `
+            --name "BESYST_Distribution_Center" `
+            --app-version "1.0.0" `
+            --vendor "Hochschule" `
+            --module-path "target/BESYST/lib" `
+            --app-image "target/BESYST" `
+            --win-menu `
+            --win-shortcut `
+            --dest target/installer
+        shell: powershell
 
       - name: Build-Artefakte hochladen
         uses: actions/upload-artifact@v4
         with:
           name: BESYST-Windows-Installer
-          path: |
-            target/BESYST*.exe
-            target/BESYST_Distribution_Center*.exe
+          path: target/installer/*.exe
           retention-days: 30
