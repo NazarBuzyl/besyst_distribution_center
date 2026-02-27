@@ -23,13 +23,7 @@ jobs:
         run: mvn clean package
 
       - name: Create Windows EXE
-        run: |
-          jpackage ^
-            --input target ^
-            --name BESYST_Distribution_Center ^
-            --main-jar besyst_distribution_center-1.0.0.jar ^
-            --main-class org.example.App ^
-            --type exe
+        run: jpackage --input target --name BESYST_Distribution_Center --main-jar besyst_distribution_center-1.0.0.jar --main-class org.example.App --type exe
 
       - name: Upload EXE
         uses: actions/upload-artifact@v4
