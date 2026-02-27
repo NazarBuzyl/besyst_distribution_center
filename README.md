@@ -2,12 +2,15 @@
 
 ## Systemanforderungen
 
-Das Projekt basiert auf einem Maven-Archetypen, der von dieser URL aus erhältlich ist: https://mvnrepository.com/artifact/org.openjfx/javafx-maven-archetypes/0.0.6.
-Die letzte erfolgreiche Kompilierung wurde mit der Maven-Version 3.8.7 und der Java-Version 21.0.5 vorgenommen. JavaFX liegt in der Version 23.0.2 vor.
+Das Projekt ist Maven-basiert und wurde zuletzt erfolgreich mit der Maven-Version 3.8.7 und der Java-Version 21.0.5 getestet.
+Das JavaFX-Plugin verwendet die JavaFX-Version 21.0.2.
+
 
 ## Installation und Inbetriebnahme
 
-Das Projekt 
+Um das Projekt mit Maven 3 zu installieren und zu starten, kann der Befehl "mvn clean javafx:run" ausgeführt werden.
+Alternativ liegt ein fertiger Build aus einer Github-Action als ausführbare Windows-exe-Datei vor.
+Der Build "Final submission build" kann über den Reiter "Actions" im Online-Repository heruntergeladen werden.
 
 
 ![Screenshot of the UI](/img/img1.png "ui left side")
