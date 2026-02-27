@@ -22,8 +22,6 @@ public class TransportsController {
         this.sectionTransport = new SectionTransport(this);
         this.transports = new LinkedHashMap<>();
         this.receivingStation = receivingStation;
-
-        createDefaultTransports();
     }
 
     private void createDefaultTransports() {
